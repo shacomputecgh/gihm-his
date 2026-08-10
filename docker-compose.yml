@@ -1,0 +1,50 @@
+# GIHM-HIS foundation deployment
+# -----------------------------------------------------------------------------
+# Default: web (nginx) + api with an SQLite volume — zero-infra quick start.
+#
+# Production path (documented in docs/17-cloud-deployment-architecture.md):
+#   1. In apps/api/prisma/schema.prisma change datasource provider to
+#      "postgresql" (the schema is portable — no SQLite-only types are used).
+#   2. Uncomment the `db` service below and set DATABASE_URL to it.
+#   3. Run `npx prisma migrate deploy` inside the api container.
+# -----------------------------------------------------------------------------
+services:
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    ports:
+      - "4000:4000"
+    environment:
+      NODE_ENV: production
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production-ghm-his}
+      # Production: DATABASE_URL=postgresql://gihm:${POSTGRES_PASSWORD}@db:5432/gihm?schema=public
+      DATABASE_URL: file:/app/data/prod.db
+      WEB_ORIGIN: http://localhost:8080
+    volumes:
+      - api-data:/app/data
+    restart: unless-stopped
+
+  # db:
+  #   image: postgres:16-alpine
+  #   environment:
+  #     POSTGRES_USER: gihm
+  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
+  #     POSTGRES_DB: gihm
+  #   volumes:
+  #     - db-data:/var/lib/postgresql/data
+  #   restart: unless-stopped
+
+volumes:
+  api-data:
+  # db-data:

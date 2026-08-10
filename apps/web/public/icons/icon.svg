@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#12203a"/>
+  <rect y="0" width="512" height="28" fill="#ce1126"/>
+  <rect y="28" width="512" height="28" fill="#fcd116"/>
+  <rect y="56" width="512" height="28" fill="#006b3f"/>
+  <circle cx="256" cy="256" r="130" fill="#ffffff"/>
+  <path d="M256 158l0 196M180 256l152 0" stroke="#ce1126" stroke-width="34" stroke-linecap="round"/>
+  <circle cx="256" cy="256" r="130" fill="none" stroke="#fcd116" stroke-width="10"/>
+  <text x="256" y="470" text-anchor="middle" font-family="system-ui, sans-serif" font-size="44" font-weight="700" fill="#ffffff">GIHM-HIS</text>
+</svg>

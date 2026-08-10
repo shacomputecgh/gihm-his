@@ -1,0 +1,1131 @@
+// =====================================================================
+// GIHM-HIS — Core data model
+// ---------------------------------------------------------------------
+// Design notes (see docs/03-database-erd.md and docs/15-offline-sync-architecture.md):
+//  * Development datasource is SQLite (zero-infra). The schema is written to be
+//    portable: production switches `provider` to "postgresql" (one line) — no
+//    SQLite-only types are used (no enums/Json/Decimal; coded values are strings
+//    validated by the API layer).
+//  * Offline-first (spec §100): every client-generated write carries
+//    clientTimestamp + idempotencyKey, and a MutationLog records the transaction.
+//  * Append-oriented clinical data (spec §102): encounters/notes/orders/prescriptions
+//    are appended; nothing is silently overwritten. Every entity has createdAt/updatedAt.
+//  * Stable identifiers (spec §86): UUID primary keys; names/phones are never keys.
+// =====================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite" // production: "postgresql" (see docs/17-cloud-deployment-architecture.md)
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------
+// Administrative geography (spec §4, §5) — configurable master data
+// ---------------------------------------------------------------------
+
+model Region {
+  id            String     @id @default(uuid())
+  code          String     @unique // e.g. "GA" (Greater Accra)
+  name          String     @unique
+  capital       String?
+  gpsLat        Float?
+  gpsLng        Float?
+  status        String     @default("ACTIVE") // ACTIVE | INACTIVE
+  effectiveDate DateTime?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  districts District[]
+  facilities Facility[]
+  patients   Patient[]
+  facilityApplications FacilityApplication[]
+}
+
+model District {
+  id        String   @id @default(uuid())
+  code      String   @unique // e.g. "GA-ACC-METRO"
+  name      String
+  type      String   // METROPOLITAN | MUNICIPAL | DISTRICT (GSS classification)
+  capital   String?
+  regionId  String
+  status    String   @default("ACTIVE")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  region       Region       @relation(fields: [regionId], references: [id])
+  facilities   Facility[]
+  patients     Patient[]
+  subDistricts SubDistrict[]
+  communities  Community[]
+  facilityApplications FacilityApplication[]
+
+  @@unique([regionId, name])
+}
+
+model SubDistrict {
+  id         String   @id @default(uuid())
+  name       String
+  districtId String
+  status     String   @default("ACTIVE")
+  createdAt  DateTime @default(now())
+
+  district   District     @relation(fields: [districtId], references: [id])
+  communities Community[]
+}
+
+model Community {
+  id           String   @id @default(uuid())
+  name         String
+  districtId   String?
+  subDistrictId String?
+  status       String   @default("ACTIVE")
+  createdAt    DateTime @default(now())
+
+  district    District?    @relation(fields: [districtId], references: [id])
+  subDistrict SubDistrict? @relation(fields: [subDistrictId], references: [id])
+}
+
+// ---------------------------------------------------------------------
+// Organizations / tenants (spec §7)
+// ---------------------------------------------------------------------
+
+model Organization {
+  id        String   @id @default(uuid())
+  name      String
+  type      String   // GOVERNMENT | GHS | TEACHING_HOSPITAL | PRIVATE | CHAG_MISSION | QUASI_GOVT | NGO
+  status    String   @default("ACTIVE")
+  createdAt DateTime @default(now())
+
+  users     User[]
+  facilities Facility[]
+}
+
+// ---------------------------------------------------------------------
+// Facilities (spec §6) — national facility registry
+// ---------------------------------------------------------------------
+
+model Facility {
+  id               String   @id @default(uuid())
+  code             String   @unique // e.g. "GH-KBTH"
+  name             String
+  type             String   // CHPS_COMPOUND | HEALTH_CENTRE | CLINIC | MATERNITY_HOME | POLYCLINIC | DISTRICT_HOSPITAL | MUNICIPAL_HOSPITAL | REGIONAL_HOSPITAL | TEACHING_HOSPITAL | UNIVERSITY_HOSPITAL | PSYCHIATRIC_HOSPITAL | SPECIALIST_HOSPITAL | PRIVATE_HOSPITAL | MISSION_HOSPITAL | QUASI_GOVT_HOSPITAL | LABORATORY | PHARMACY | DIAGNOSTIC_CENTRE | REHABILITATION_FACILITY | OTHER
+  level            String?  // PRIMARY | SECONDARY | TERTIARY
+  ownership        String   // GOVERNMENT | GHS | MOH | TEACHING_HOSPITAL | CHAG_MISSION | PRIVATE | QUASI_GOVT | NGO | OTHER
+  organizationId   String?
+  regionId         String
+  districtId       String
+  address          String?
+  gpsLat           Float?
+  gpsLng           Float?
+  telephone        String?
+  email            String?
+  website          String?
+  emergencyContact String?
+  operationalStatus String  @default("OPERATIONAL") // OPERATIONAL | TEMPORARILY_CLOSED | UNDER_CONSTRUCTION | INACTIVE | SUSPENDED
+  accreditation    String?  // ACCREDITED | PENDING_ACCREDITATION | null
+  bedCapacity      Int?
+  openingHours     String   @default("{}") // JSON: {"mon-fri":"08:00-17:00",...}
+  services         String   @default("[]") // JSON array of service codes
+  departmentsJson  String   @default("[]") // JSON array of department names
+  isSynthetic      Boolean  @default(false) // true = DEMO/SYNTHETIC DATA (spec §155)
+  status           String   @default("ACTIVE")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  organization Organization? @relation(fields: [organizationId], references: [id])
+  region       Region        @relation(fields: [regionId], references: [id])
+  district     District      @relation(fields: [districtId], references: [id])
+  users        User[]
+  patients     Patient[]
+  appointments Appointment[]
+  devices      Device[]
+  departments  Department[]
+  stockItems   StockItem[]
+  stockMovements StockMovement[]
+  beds         Bed[]
+  referrals    Referral[]
+  ambulances   Ambulance[]
+  ambulanceTrips AmbulanceTrip[] @relation("TripDestination")
+  bloodDonations BloodDonation[]
+  bloodUnits   BloodUnit[]
+  transfusions TransfusionRecord[]
+  bloodDonors  BloodDonor[]
+  surgicalBookings SurgicalBooking[]
+  emergencyCases EmergencyCase[]
+  carePlans    CarePlan[]
+  nursingObservations NursingObservation[]
+  medicationAdministrations MedicationAdministration[]
+  antenatalVisits AntenatalVisit[]
+  deliveryRecords DeliveryRecord[]
+  postnatalVisits PostnatalVisit[]
+  suppliers    Supplier[]
+  requisitions Requisition[]
+  purchaseOrders PurchaseOrder[]
+}
+
+model Department {
+  id           String   @id @default(uuid())
+  name         String
+  facilityId   String
+  queueEnabled Boolean  @default(true)
+  status       String   @default("ACTIVE")
+  createdAt    DateTime @default(now())
+
+  facility Facility @relation(fields: [facilityId], references: [id])
+}
+
+// ---------------------------------------------------------------------
+// Identity & access (spec §61, §62)
+// ---------------------------------------------------------------------
+
+model Role {
+  id          String   @id @default(uuid())
+  code        String   @unique // NATIONAL_ADMIN | REGIONAL_DIRECTOR | DISTRICT_DIRECTOR | HOSPITAL_ADMIN | MEDICAL_DIRECTOR | DOCTOR | NURSE | MIDWIFE | PHARMACIST | LAB_SCIENTIST | RADIOLOGIST | RADIOGRAPHER | HEALTH_INFO_OFFICER | RECORDS_OFFICER | ACCOUNTANT | CASHIER | STOREKEEPER | PROCUREMENT_OFFICER | HR_OFFICER | IT_ADMIN | AMBULANCE_OFFICER | COMMUNITY_HEALTH_WORKER | PATIENT | ...
+  name        String
+  scope       String   // NATIONAL | REGIONAL | DISTRICT | FACILITY | PATIENT
+  permissions String   @default("[]") // JSON array of permission codes (spec §62)
+  createdAt   DateTime @default(now())
+
+  users User[]
+}
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String
+  fullName     String
+  roleId       String
+  organizationId String?
+  facilityId   String?
+  regionId     String?
+  districtId   String?
+  status       String    @default("ACTIVE") // ACTIVE | SUSPENDED | LOCKED
+  isSynthetic  Boolean   @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  role         Role          @relation(fields: [roleId], references: [id])
+  organization Organization? @relation(fields: [organizationId], references: [id])
+  facility     Facility?     @relation(fields: [facilityId], references: [id])
+  patient      Patient?
+  appointments Appointment[] @relation("AppointmentClinician")
+  devices      Device[]      @relation("DeviceUser")
+  surgeriesAsSurgeon      SurgicalBooking[] @relation("TheatreSurgeon")
+  surgeriesAsAnaesthetist SurgicalBooking[] @relation("TheatreAnaesthetist")
+  emergencyTriaged EmergencyCase[] @relation("EmergencyTriager")
+  emergencyStaff  EmergencyCase[] @relation("EmergencyStaff")
+  carePlansCreated CarePlan[]
+  observationsRecorded NursingObservation[]
+  medsAdministered MedicationAdministration[]
+  purchaseOrdersIssued PurchaseOrder[]
+  requisitionsRequested Requisition[] @relation("ReqRequestedBy")
+  requisitionsApproved Requisition[] @relation("ReqApprovedBy")
+}
+
+// ---------------------------------------------------------------------
+// Patients & Master Patient Index (spec §11, §12, §13)
+// ---------------------------------------------------------------------
+
+model Patient {
+  id          String   @id @default(uuid())
+  mrn         String   @unique // Medical record number, e.g. "GH-000123"
+  fullName    String
+  formerName  String?
+  dateOfBirth DateTime?
+  sex         String?  // M | F
+  maritalStatus String?
+  occupation  String?
+  nationality String   @default("Ghanaian")
+  phone       String?
+  email       String?
+  regionId    String?
+  districtId  String?
+  facilityId  String?
+  community   String?
+  address     String?
+  ghanaCard   String?
+  nhisNumber  String?
+  passport    String?
+  birthCertificate String?
+  bloodGroup  String?
+  genotype    String?
+  allergies   String   @default("[]") // JSON array
+  emergencyContactName String?
+  emergencyContactPhone String?
+  nextOfKinName  String?
+  nextOfKinPhone String?
+  consentAccepted Boolean @default(false)
+  consentRecordedAt DateTime?
+  isSynthetic Boolean  @default(true)
+  status      String   @default("ACTIVE") // ACTIVE | MERGED | INACTIVE
+  mergedIntoId String? // set when this record was merged into another (MPI §12)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  userId      String?        @unique
+  region      Region?        @relation(fields: [regionId], references: [id])
+  district    District?      @relation(fields: [districtId], references: [id])
+  facility    Facility?      @relation(fields: [facilityId], references: [id])
+  user        User?          @relation(fields: [userId], references: [id])
+  mergedInto  Patient?       @relation("PatientMergedInto", fields: [mergedIntoId], references: [id])
+  mergedFrom  Patient[]      @relation("PatientMergedInto")
+
+  identifiers  PatientIdentifier[]
+  contacts     PatientContact[]
+  appointments Appointment[]
+  encounters   Encounter[]
+  labOrders    LabOrder[]
+  prescriptions Prescription[]
+  admissions   Admission[]
+  referrals    Referral[]
+  invoices     Invoice[]
+  immunizations Immunization[]
+  diseaseCases DiseaseCase[]
+  queueEntries QueueEntry[]
+  mergesAsSource PatientMerge[] @relation("MergeSource")
+  mergesAsTarget PatientMerge[] @relation("MergeTarget")
+  beds         Bed[]
+  ambulanceTrips AmbulanceTrip[]
+  bloodDonor   BloodDonor[]
+  transfusions TransfusionRecord[]
+  unitsIssued  BloodUnit[]     @relation("UnitIssuedPatient")
+  unitsCrossmatched BloodUnit[] @relation("UnitCrossmatchPatient")
+  surgeries    SurgicalBooking[]
+  emergencyCases EmergencyCase[]
+  carePlans    CarePlan[]
+  nursingObservations NursingObservation[]
+  medicationAdministrations MedicationAdministration[]
+  antenatalVisits AntenatalVisit[]
+  deliveryRecords DeliveryRecord[]
+  postnatalVisits PostnatalVisit[]
+}
+
+/**
+ * MPI merge audit record (spec §12): every merge stores the moved entity ids so
+ * the merge can be reversed (unmerge) with a complete audit trail. Never silent.
+ */
+model PatientMerge {
+  id               String   @id @default(uuid())
+  sourcePatientId  String // patient whose records were merged away
+  targetPatientId  String // surviving patient
+  sourceMrn        String
+  targetMrn        String
+  reason           String?
+  movedEntities    String   @default("{}") // JSON: {"encounters":[ids],"labOrders":[ids],...}
+  mergedById       String?
+  mergedAt         DateTime @default(now())
+  unmergedAt       DateTime?
+  unmergedById     String?
+  unmergeReason    String?
+
+  source Patient @relation("MergeSource", fields: [sourcePatientId], references: [id])
+  target Patient @relation("MergeTarget", fields: [targetPatientId], references: [id])
+}
+
+model PatientIdentifier {
+  id        String   @id @default(uuid())
+  patientId String
+  type      String   // GHANA_CARD | NHIS | PASSPORT | BIRTH_CERTIFICATE | FACILITY_NUMBER | OTHER
+  value     String
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  patient Patient @relation(fields: [patientId], references: [id])
+
+  @@unique([patientId, type, value])
+}
+
+model PatientContact {
+  id        String   @id @default(uuid())
+  patientId String
+  kind      String   // PHONE | EMAIL | ADDRESS
+  value     String
+  isPrimary Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  patient Patient @relation(fields: [patientId], references: [id])
+}
+
+// ---------------------------------------------------------------------
+// Appointments & queue (spec §14, §15)
+// ---------------------------------------------------------------------
+
+model Appointment {
+  id            String    @id @default(uuid())
+  patientId     String
+  facilityId    String?
+  departmentId  String?
+  clinicianId   String?
+  service       String?
+  reason        String?
+  scheduledFor  DateTime
+  status        String    @default("BOOKED") // BOOKED | CONFIRMED | CHECKED_IN | COMPLETED | CANCELLED | MISSED
+  idempotencyKey String?  @unique
+  clientTimestamp DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  patient   Patient     @relation(fields: [patientId], references: [id])
+  facility  Facility?   @relation(fields: [facilityId], references: [id])
+  clinician User?       @relation("AppointmentClinician", fields: [clinicianId], references: [id])
+}
+
+model QueueEntry {
+  id           String   @id @default(uuid())
+  facilityId   String
+  departmentId String
+  patientId    String?
+  ticket       String   // e.g. "OPD-014"
+  status       String   @default("WAITING") // WAITING | CALLED | IN_SERVICE | COMPLETED | SKIPPED
+  createdAt    DateTime @default(now())
+  calledAt     DateTime?
+  servedAt     DateTime?
+
+  patient Patient? @relation(fields: [patientId], references: [id])
+
+  @@unique([facilityId, departmentId, ticket])
+}
+
+// ---------------------------------------------------------------------
+// Clinical (spec §16-§21, §23, §25) — append-oriented
+// ---------------------------------------------------------------------
+
+model Encounter {
+  id            String   @id @default(uuid())
+  patientId     String
+  facilityId    String?
+  departmentId  String?
+  type          String   // OPD | EMERGENCY | INPATIENT | ANTENATAL | IMMUNIZATION | OTHER
+  status        String   @default("OPEN") // OPEN | TRIAGED | IN_PROGRESS | COMPLETED
+  clinicianId   String?
+  presentingComplaint String?
+  // Triage / vitals (spec §17)
+  temperature   Float?
+  pulse         Int?
+  respiratoryRate Int?
+  systolicBp    Int?
+  diastolicBp   Int?
+  spo2          Float?
+  weightKg      Float?
+  heightCm      Float?
+  painScore     Int?
+  triageCategory String? // NON_URGENT | URGENT | EMERGENT
+  diagnosisSummary String?
+  idempotencyKey String? @unique
+  clientTimestamp DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  patient      Patient        @relation(fields: [patientId], references: [id])
+  notes        ClinicalNote[]
+  diagnoses    Diagnosis[]
+  labOrders    LabOrder[]
+  prescriptions Prescription[]
+  carePlans    CarePlan[]
+  nursingObservations NursingObservation[]
+}
+
+model ClinicalNote {
+  id          String   @id @default(uuid())
+  encounterId String
+  authorId    String?
+  noteType    String   // NURSING | DOCTOR | PROGRESS | DISCHARGE | TRIAGE
+  note        String
+  createdAt   DateTime @default(now())
+
+  encounter Encounter @relation(fields: [encounterId], references: [id])
+}
+
+model Diagnosis {
+  id          String   @id @default(uuid())
+  encounterId String
+  code        String   // ICD-10 code
+  description String
+  type        String   @default("PRIMARY") // PRIMARY | SECONDARY | DIFFERENTIAL
+  createdAt   DateTime @default(now())
+
+  encounter Encounter @relation(fields: [encounterId], references: [id])
+}
+
+model LabOrder {
+  id            String   @id @default(uuid())
+  encounterId   String
+  patientId     String
+  facilityId    String?
+  test          String
+  discipline    String   // HAEMATOLOGY | CHEMISTRY | MICROBIOLOGY | SEROLOGY | PATHOLOGY | BLOOD_BANK
+  status        String   @default("ORDERED") // ORDERED | COLLECTED | RESULTED | VERIFIED | CANCELLED
+  sampleType    String?
+  result        String?
+  referenceRange String?
+  critical      Boolean  @default(false)
+  requestedById String?
+  verifiedById  String?
+  resultNote    String?
+  idempotencyKey String? @unique
+  clientTimestamp DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  encounter Encounter @relation(fields: [encounterId], references: [id])
+  patient   Patient   @relation(fields: [patientId], references: [id])
+}
+
+model Prescription {
+  id            String   @id @default(uuid())
+  encounterId   String
+  patientId     String
+  facilityId    String?
+  medicine      String
+  dosage        String?
+  frequency     String?
+  duration      String?
+  quantity      Int?
+  route         String?
+  status        String   @default("ACTIVE") // ACTIVE | DISPENSED | PARTIAL | CANCELLED
+  dispensedQty  Int?
+  prescribedById String?
+  dispensedById String?
+  idempotencyKey String? @unique
+  clientTimestamp DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  encounter Encounter @relation(fields: [encounterId], references: [id])
+  patient   Patient   @relation(fields: [patientId], references: [id])
+  administrations MedicationAdministration[]
+}
+
+model Admission {
+  id              String    @id @default(uuid())
+  patientId       String
+  facilityId      String?
+  ward            String?
+  bed             String?
+  admittedAt      DateTime  @default(now())
+  dischargedAt    DateTime?
+  status          String    @default("ADMITTED") // ADMITTED | DISCHARGED | TRANSFERRED
+  reason          String?
+  dischargeSummary String?
+  createdAt       DateTime  @default(now())
+
+  patient Patient @relation(fields: [patientId], references: [id])
+}
+
+model Referral {
+  id            String   @id @default(uuid())
+  patientId     String
+  fromFacilityId String
+  toFacilityId  String?
+  toFacilityName String?
+  specialty     String?
+  urgency       String   @default("ROUTINE") // ROUTINE | URGENT | EMERGENCY
+  summary       String?
+  status        String   @default("SUBMITTED") // DRAFT | SUBMITTED | RECEIVED | ACCEPTED | REJECTED | AWAITING_TRANSPORT | IN_TRANSIT | ARRIVED | COMPLETED | RETURNED
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  patient  Patient   @relation(fields: [patientId], references: [id])
+  facility Facility? @relation(fields: [fromFacilityId], references: [id])
+}
+
+// ---------------------------------------------------------------------
+// Finance (spec §37) — billing demo
+// ---------------------------------------------------------------------
+
+model Invoice {
+  id            String   @id @default(uuid())
+  patientId     String
+  facilityId    String?
+  encounterId   String?
+  items         String   @default("[]") // JSON array of {description, amount}
+  amount        Float
+  paidAmount    Float    @default(0)
+  status        String   @default("UNPAID") // UNPAID | PARTIAL | PAID | EXEMPT
+  paymentMethod String?  // CASH | MOMO | CARD | BANK | INSURANCE | CORPORATE | EXEMPT
+  issuedAt      DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  patient Patient @relation(fields: [patientId], references: [id])
+}
+
+// ---------------------------------------------------------------------
+// Public health (spec §22, §46, §52)
+// ---------------------------------------------------------------------
+
+model Immunization {
+  id           String   @id @default(uuid())
+  patientId    String
+  facilityId   String?
+  vaccine      String   // BCG | OPV | PENTA | PCV | ROTA | MEASLES_RUBELLA | YF | HPV | TT | COVID19 | OTHER
+  dose         String
+  administeredAt DateTime
+  nextDueAt    DateTime?
+  batch        String?
+  vaccinatorId String?
+  status       String   @default("GIVEN") // GIVEN | MISSED | DUE
+  createdAt    DateTime @default(now())
+
+  patient Patient @relation(fields: [patientId], references: [id])
+}
+
+model DiseaseCase {
+  id          String   @id @default(uuid())
+  patientId   String?
+  facilityId  String
+  disease     String
+  caseType    String   // SUSPECTED | CONFIRMED
+  status      String   @default("OPEN") // OPEN | INVESTIGATED | CLOSED
+  outcome     String?
+  reportedAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  patient Patient? @relation(fields: [patientId], references: [id])
+}
+
+// ---------------------------------------------------------------------
+// Inventory & logistics (spec §25, §26) — health commodities with min/max
+// stock, batch/expiry and a full movement audit trail.
+// ---------------------------------------------------------------------
+
+model StockItem {
+  id           String   @id @default(uuid())
+  facilityId   String
+  name         String
+  category     String   @default("MEDICINE") // MEDICINE | SUPPLY | REAGENT | VACCINE | OTHER
+  unit         String   @default("unit") // tablet | vial | sachet | box | pack | bottle
+  quantity     Int      @default(0)
+  minStock     Int      @default(10)
+  maxStock     Int      @default(500)
+  reorderLevel Int      @default(20)
+  batch        String?
+  expiryDate   DateTime?
+  location     String?
+  status       String   @default("ACTIVE") // ACTIVE | DISCONTINUED
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  facility  Facility        @relation(fields: [facilityId], references: [id])
+  movements StockMovement[]
+
+  @@unique([facilityId, name])
+}
+
+model StockMovement {
+  id            String   @id @default(uuid())
+  stockItemId   String
+  type          String   // RECEIPT | ISSUE | ADJUSTMENT | RETURN | WASTAGE
+  quantity      Int
+  balanceAfter  Int
+  note          String?
+  performedById String?
+  createdAt     DateTime @default(now())
+
+  stockItem StockItem @relation(fields: [stockItemId], references: [id])
+  facility  Facility  @relation(fields: [facilityId], references: [id])
+  facilityId String
+}
+
+// ---------------------------------------------------------------------
+// Inpatient beds (spec §18) — ward bed board with status and occupancy.
+// ---------------------------------------------------------------------
+
+model Bed {
+  id          String   @id @default(uuid())
+  facilityId  String
+  ward        String
+  bedNumber   String
+  status      String   @default("AVAILABLE") // AVAILABLE | OCCUPIED | RESERVED | CLEANING | MAINTENANCE | ISOLATION
+  patientId   String?
+  admissionId String?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  facility Facility @relation(fields: [facilityId], references: [id])
+  patient  Patient? @relation(fields: [patientId], references: [id])
+
+  @@unique([facilityId, ward, bedNumber])
+}
+
+// ---------------------------------------------------------------------
+// Ambulance management (spec §33) — registry, dispatch and trip lifecycle.
+// ---------------------------------------------------------------------
+
+model Ambulance {
+  id             String   @id @default(uuid())
+  facilityId     String
+  registration   String   // e.g. "GV-1234-25"
+  model          String?
+  type           String   @default("AMBULANCE") // AMBULANCE | RAPID_RESPONSE | HEARSE
+  status         String   @default("AVAILABLE") // AVAILABLE | ASSIGNED | EN_ROUTE | AT_SCENE | TRANSPORTING | AT_FACILITY | RETURNING | MAINTENANCE | OFFLINE
+  driverName     String?
+  driverPhone    String?
+  crewNames      String   @default("[]") // JSON array
+  gpsLat         Float?
+  gpsLng         Float?
+  fuelLevel      Int?
+  odometerKm     Int?
+  lastMaintenanceAt DateTime?
+  nextMaintenanceAt DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  facility Facility       @relation(fields: [facilityId], references: [id])
+  trips    AmbulanceTrip[]
+}
+
+model AmbulanceTrip {
+  id                  String   @id @default(uuid())
+  ambulanceId         String
+  patientId           String?
+  dispatchedById      String?
+  status              String   @default("ASSIGNED") // ASSIGNED | EN_ROUTE | AT_SCENE | TRANSPORTING | AT_FACILITY | COMPLETED | CANCELLED
+  emergencyType       String?  // MEDICAL | TRAUMA | OBSTETRIC | CARDIAC | OTHER
+  pickupLocation      String?
+  pickupLat           Float?
+  pickupLng           Float?
+  destinationFacilityId String?
+  notes               String?
+  dispatchedAt        DateTime @default(now())
+  arrivedAtScene      DateTime?
+  departedSceneAt     DateTime?
+  arrivedAtFacility   DateTime?
+  completedAt         DateTime?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  ambulance Ambulance @relation(fields: [ambulanceId], references: [id])
+  patient   Patient?  @relation(fields: [patientId], references: [id])
+  destination Facility? @relation("TripDestination", fields: [destinationFacilityId], references: [id])
+}
+
+// ---------------------------------------------------------------------
+// Blood bank (spec §27) — donors, donations, inventory units, transfusions.
+// ---------------------------------------------------------------------
+
+model BloodDonor {
+  id             String   @id @default(uuid())
+  facilityId     String
+  patientId      String?
+  fullName       String
+  sex            String?
+  dateOfBirth    DateTime?
+  phone          String?
+  bloodGroup     String   // O+ | A+ | B+ | AB+ | O- | A- | B- | AB-
+  genotype       String?
+  status         String   @default("ACTIVE") // ACTIVE | DEFERRED | INACTIVE
+  lastDonationAt DateTime?
+  totalDonations Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  facility  Facility         @relation(fields: [facilityId], references: [id])
+  patient   Patient?         @relation(fields: [patientId], references: [id])
+  donations BloodDonation[]
+}
+
+model BloodDonation {
+  id               String   @id @default(uuid())
+  donorId          String
+  facilityId       String
+  bloodGroup       String
+  volumeMl         Int      @default(450)
+  screeningResult  String?  // NEGATIVE | REACTIVE | PENDING
+  unitsCreated     Int      @default(1)
+  donatedAt        DateTime @default(now())
+  createdAt        DateTime @default(now())
+
+  donor    BloodDonor @relation(fields: [donorId], references: [id])
+  facility Facility   @relation(fields: [facilityId], references: [id])
+  units    BloodUnit[]
+}
+
+model BloodUnit {
+  id                String   @id @default(uuid())
+  donationId        String?
+  facilityId        String
+  unitCode          String   @unique // e.g. "BL-2026-0001"
+  bloodGroup        String
+  component         String   @default("WHOLE_BLOOD") // WHOLE_BLOOD | RED_CELLS | PLASMA | PLATELETS | CRYOPRECIPITATE
+  status            String   @default("AVAILABLE") // AVAILABLE | RESERVED | CROSSMATCHED | ISSUED | EXPIRED | DISCARDED
+  expiryDate        DateTime
+  collectedAt       DateTime @default(now())
+  issuedAt          DateTime?
+  issuedToPatientId String?
+  crossmatchPatientId String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  donation     BloodDonation?     @relation(fields: [donationId], references: [id])
+  facility     Facility           @relation(fields: [facilityId], references: [id])
+  issuedPatient Patient?          @relation("UnitIssuedPatient", fields: [issuedToPatientId], references: [id])
+  crossmatchPatient Patient?      @relation("UnitCrossmatchPatient", fields: [crossmatchPatientId], references: [id])
+  transfusions TransfusionRecord[]
+}
+
+model TransfusionRecord {
+  id               String   @id @default(uuid())
+  unitId           String
+  patientId        String
+  facilityId       String
+  crossmatchResult String?  // COMPATIBLE | INCOMPATIBLE
+  startedAt        DateTime?
+  completedAt      DateTime?
+  reaction         String?  // adverse reaction notes
+  performedById    String?
+  status           String   @default("CROSSMATCHED") // CROSSMATCHED | IN_PROGRESS | COMPLETED | REACTION
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  unit     BloodUnit @relation(fields: [unitId], references: [id])
+  patient  Patient   @relation(fields: [patientId], references: [id])
+  facility Facility  @relation(fields: [facilityId], references: [id])
+}
+
+// ---------------------------------------------------------------------
+// Theatre / surgery (spec §28) — bookings, consent and case progression.
+// ---------------------------------------------------------------------
+
+model SurgicalBooking {
+  id               String   @id @default(uuid())
+  patientId        String
+  facilityId       String
+  procedure        String
+  theatre          String?
+  surgeonId        String?
+  anaesthetistId   String?
+  urgency          String   @default("ROUTINE") // ROUTINE | URGENT | EMERGENCY
+  status           String   @default("BOOKED") // BOOKED | SCHEDULED | PRE_OP | IN_PROGRESS | RECOVERY | COMPLETED | CANCELLED
+  scheduledFor     DateTime?
+  consentObtained  Boolean  @default(false)
+  consentDate      DateTime?
+  consentNote      String?
+  preOpAssessment  String?
+  intraOpNotes     String?
+  postOpNotes      String?
+  complications    String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  patient      Patient     @relation(fields: [patientId], references: [id])
+  facility     Facility    @relation(fields: [facilityId], references: [id])
+  surgeon      User?       @relation("TheatreSurgeon", fields: [surgeonId], references: [id])
+  anaesthetist User?       @relation("TheatreAnaesthetist", fields: [anaesthetistId], references: [id])
+}
+
+// ---------------------------------------------------------------------
+// Emergency department (spec §19) — rapid registration, triage, disposition.
+// ---------------------------------------------------------------------
+
+model EmergencyCase {
+  id                  String   @id @default(uuid())
+  patientId           String
+  facilityId          String
+  arrivedAt           DateTime @default(now())
+  modeOfArrival       String   @default("WALK_IN") // WALK_IN | AMBULANCE | TRANSFER
+  presentingComplaint String?
+  triageCategory      String?  // NON_URGENT | URGENT | EMERGENT | RESUSCITATION
+  triageScore         Int?
+  temperature         Float?
+  pulse               Int?
+  respiratoryRate     Int?
+  systolicBp          Int?
+  diastolicBp         Int?
+  spo2                Float?
+  painScore           Int?
+  trauma              Boolean  @default(false)
+  resuscitation       Boolean  @default(false)
+  status              String   @default("WAITING") // WAITING | TRIAGED | IN_PROGRESS | ADMITTED | DISCHARGED | REFERRED | DEATH
+  disposition         String?  // ADMITTED | DISCHARGED | REFERRED
+  dispositionNote     String?
+  triagedById         String?
+  staffId             String?
+  dischargedAt        DateTime?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  patient  Patient  @relation(fields: [patientId], references: [id])
+  facility Facility @relation(fields: [facilityId], references: [id])
+  triagedBy User?   @relation("EmergencyTriager", fields: [triagedById], references: [id])
+  staff     User?   @relation("EmergencyStaff", fields: [staffId], references: [id])
+}
+
+// ---------------------------------------------------------------------
+// Nursing (spec §29) — care plans, observations and medication admin (MAR).
+// ---------------------------------------------------------------------
+
+model CarePlan {
+  id            String   @id @default(uuid())
+  patientId     String
+  facilityId    String
+  encounterId   String?
+  diagnosis     String
+  goals         String   @default("[]") // JSON array
+  interventions String   @default("[]") // JSON array
+  reviewDate    DateTime?
+  status        String   @default("ACTIVE") // ACTIVE | COMPLETED | CANCELLED
+  createdById   String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  patient   Patient   @relation(fields: [patientId], references: [id])
+  facility  Facility  @relation(fields: [facilityId], references: [id])
+  encounter Encounter? @relation(fields: [encounterId], references: [id])
+  createdBy User?     @relation(fields: [createdById], references: [id])
+}
+
+model NursingObservation {
+  id          String   @id @default(uuid())
+  patientId   String
+  facilityId  String
+  encounterId String?
+  type        String   // VITALS | FLUID_INPUT | FLUID_OUTPUT | GLUCOSE | PAIN | OTHER
+  value       String   // e.g. "118/76", "500ml"
+  note        String?
+  recordedById String?
+  observedAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  patient   Patient   @relation(fields: [patientId], references: [id])
+  facility  Facility  @relation(fields: [facilityId], references: [id])
+  encounter Encounter? @relation(fields: [encounterId], references: [id])
+  recordedBy User?    @relation(fields: [recordedById], references: [id])
+}
+
+model MedicationAdministration {
+  id             String   @id @default(uuid())
+  patientId      String
+  facilityId     String
+  prescriptionId String?
+  medicine       String
+  dose           String?
+  route          String?
+  administeredAt DateTime @default(now())
+  givenById      String?
+  status         String   @default("GIVEN") // GIVEN | REFUSED | OMITTED
+  note           String?
+  createdAt      DateTime @default(now())
+
+  patient      Patient       @relation(fields: [patientId], references: [id])
+  facility     Facility      @relation(fields: [facilityId], references: [id])
+  prescription Prescription? @relation(fields: [prescriptionId], references: [id])
+  givenBy      User?         @relation(fields: [givenById], references: [id])
+}
+
+// ---------------------------------------------------------------------
+// Maternity & obstetrics (spec §20) — ANC, delivery and postnatal.
+// ---------------------------------------------------------------------
+
+model AntenatalVisit {
+  id              String   @id @default(uuid())
+  patientId       String
+  facilityId      String
+  visitNumber     Int      @default(1)
+  gaWeeks         Int?
+  edd             DateTime?
+  weightKg        Float?
+  systolicBp      Int?
+  diastolicBp     Int?
+  fundalHeight    Float?
+  fetalHeartRate  Int?
+  riskAssessment  String?  // LOW | HIGH
+  supplements     String?
+  nextVisitAt     DateTime?
+  status          String   @default("ACTIVE") // ACTIVE | DELIVERED | LOST
+  visitedAt       DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  patient  Patient  @relation(fields: [patientId], references: [id])
+  facility Facility @relation(fields: [facilityId], references: [id])
+}
+
+model DeliveryRecord {
+  id               String   @id @default(uuid())
+  patientId        String
+  facilityId       String
+  deliveryType     String   @default("NORMAL") // NORMAL | ASSISTED | CAESAREAN
+  mode             String?  // VAGINAL | INSTRUMENTAL | C_SECTION
+  outcome          String?  // LIVE_BIRTH | STILLBIRTH
+  birthWeightKg    Float?
+  apgar1           Int?
+  apgar5           Int?
+  complications    String?
+  maternalOutcome  String?  // WELL | COMPLICATION | DEATH
+  newbornOutcome   String?  // WELL | NICU | DEATH
+  placentaComplete Boolean  @default(true)
+  attendedByName   String?
+  deliveredAt      DateTime @default(now())
+  createdAt        DateTime @default(now())
+
+  patient  Patient  @relation(fields: [patientId], references: [id])
+  facility Facility @relation(fields: [facilityId], references: [id])
+}
+
+model PostnatalVisit {
+  id            String   @id @default(uuid())
+  patientId     String
+  facilityId    String
+  visitNumber   Int      @default(1)
+  maternalReview  String?
+  newbornReview   String?
+  breastfeeding String?  // EXCLUSIVE | MIXED | NONE
+  contraception String?
+  immunization  String?
+  followUpAt    DateTime?
+  visitedAt     DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  patient  Patient  @relation(fields: [patientId], references: [id])
+  facility Facility @relation(fields: [facilityId], references: [id])
+}
+
+// ---------------------------------------------------------------------
+// Procurement (spec §45) — suppliers, requisitions, purchase orders.
+// ---------------------------------------------------------------------
+
+model Supplier {
+  id          String   @id @default(uuid())
+  facilityId  String
+  name        String
+  contactName String?
+  phone       String?
+  email       String?
+  address     String?
+  status      String   @default("ACTIVE") // ACTIVE | INACTIVE
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  facility Facility       @relation(fields: [facilityId], references: [id])
+  orders   PurchaseOrder[]
+}
+
+model Requisition {
+  id            String   @id @default(uuid())
+  facilityId    String
+  requestedById String?
+  items         String   @default("[]") // JSON array {name, quantity, unit}
+  reason        String?
+  status        String   @default("SUBMITTED") // SUBMITTED | APPROVED | REJECTED | ORDERED | RECEIVED | CANCELLED
+  approvedById  String?
+  approvedAt    DateTime?
+  approvalNote  String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  facility   Facility   @relation(fields: [facilityId], references: [id])
+  orders     PurchaseOrder[]
+  requestedBy User?     @relation("ReqRequestedBy", fields: [requestedById], references: [id])
+  approvedBy User?      @relation("ReqApprovedBy", fields: [approvedById], references: [id])
+}
+
+model PurchaseOrder {
+  id            String   @id @default(uuid())
+  facilityId    String
+  requisitionId String?
+  supplierId    String?
+  supplierName  String?
+  items         String   @default("[]") // JSON array {name, quantity, unit, unitPrice}
+  totalAmount   Float    @default(0)
+  status        String   @default("DRAFT") // DRAFT | ISSUED | APPROVED | DELIVERED | RECEIVED | CANCELLED
+  issuedById    String?
+  receivedAt    DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  facility   Facility   @relation(fields: [facilityId], references: [id])
+  requisition Requisition? @relation(fields: [requisitionId], references: [id])
+  supplier   Supplier?  @relation(fields: [supplierId], references: [id])
+  issuedBy   User?      @relation(fields: [issuedById], references: [id])
+}
+
+// ---------------------------------------------------------------------
+// Devices & synchronization (spec §100, §104, §109, §129)
+// ---------------------------------------------------------------------
+
+model Device {
+  id             String   @id @default(uuid())
+  deviceId       String   @unique // client-generated stable device id
+  name           String
+  platform       String   // WINDOWS | ANDROID | IOS | WEB | PWA
+  facilityId     String?
+  assignedUserId String?
+  status         String   @default("ACTIVE") // ACTIVE | LOST | STOLEN | SUSPENDED | RETIRED | BLOCKED
+  lastSyncAt     DateTime?
+  lastSeenAt     DateTime?
+  softwareVersion String?
+  createdAt      DateTime @default(now())
+
+  facility Facility? @relation(fields: [facilityId], references: [id])
+  user     User?     @relation("DeviceUser", fields: [assignedUserId], references: [id])
+}
+
+model MutationLog {
+  id              String   @id @default(uuid())
+  transactionId   String   @unique // client-generated transaction id
+  deviceId        String?
+  entityType      String
+  entityId        String?
+  operation       String   // CREATE | UPDATE
+  payload         String   // JSON
+  idempotencyKey  String?
+  clientTimestamp DateTime
+  serverTimestamp DateTime @default(now())
+  status          String   @default("PENDING") // PENDING | PROCESSED | FAILED | CONFLICT
+  retryCount      Int      @default(0)
+  error           String?
+  createdAt       DateTime @default(now())
+}
+
+// ---------------------------------------------------------------------
+// Public facility self-registration (spec §6, §170) — applications await
+// national/regional review before a Facility record is created.
+// ---------------------------------------------------------------------
+
+model FacilityApplication {
+  id           String   @id @default(uuid())
+  name         String
+  type         String
+  ownership    String
+  regionId     String
+  districtId   String
+  address      String?
+  telephone    String?
+  email        String?
+  contactName  String?
+  services     String   @default("[]") // JSON array of service codes
+  reason       String?
+  status       String   @default("PENDING") // PENDING | APPROVED | REJECTED
+  reviewedById String?
+  reviewedAt   DateTime?
+  reviewNote   String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  region   Region   @relation(fields: [regionId], references: [id])
+  district District @relation(fields: [districtId], references: [id])
+}
+
+// ---------------------------------------------------------------------
+// Audit (spec §67) — never silently overwrite clinical history
+// ---------------------------------------------------------------------
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  actorId     String?
+  actorEmail  String?
+  role        String?
+  action      String   // e.g. patient.create, patient.merge, appointment.book
+  entityType  String?
+  entityId    String?
+  facilityId  String?
+  deviceId    String?
+  ip          String?
+  before      String?
+  after       String?
+  reason      String?
+  createdAt   DateTime @default(now())
+}

@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Databases (dev)
+*.db
+*.db-journal
+*.sqlite
+apps/api/prisma/*.db*
+
+# Test artifacts
+coverage/
+apps/api/tests/.tmp/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
