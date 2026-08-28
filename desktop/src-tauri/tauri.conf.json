@@ -1,0 +1,71 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "GIHM-HIS Desktop",
+  "version": "0.1.0",
+  "identifier": "gh.gihm.his.desktop",
+  "developer": "ShaComputeC",
+  "developerUrl": "mailto:shacomputec@gmail.com",
+  "build": {
+    "beforeDevCommand": "npm --prefix ../apps/web run dev",
+    "devUrl": "http://localhost:5173",
+    "beforeBuildCommand": "npm --prefix ../apps/web run build",
+    "frontendDist": "../../apps/web/dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "GIHM-HIS — Ghana Health Platform | ShaComputeC",
+        "width": 1400,
+        "height": 900,
+        "minWidth": 1024,
+        "minHeight": 700,
+        "resizable": true,
+        "fullscreen": false,
+        "center": true
+      }
+    ],
+    "security": {
+      "csp": null
+    },
+    "trayIcon": {
+      "iconPath": "icons/icon.png",
+      "iconAsTemplate": false
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["msi", "nsis"],
+    "category": "Healthcare and Fitness",
+    "copyright": "© 2026 GIHM-HIS — Developed by ShaComputeC (Hard Works Never Fail)",
+    "shortDescription": "GIHM-HIS desktop client by ShaComputeC (offline-first hospital information system)",
+    "longDescription": "GIHM-HIS — Ghana Integrated Health Management & Hospital Information System. Developed by ShaComputeC. Desktop shell embedding the offline-first PWA with a native tray, an OS-stored device identity and auto-update. Contact: shacomputec@gmail.com | +233 530 941 750",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "windows": {
+      "webviewInstallMode": {
+        "type": "offlineInstaller",
+        "silent": true
+      },
+      "wix": {
+        "language": "en-US"
+      }
+    }
+  },
+  "plugins": {
+    "updater": {
+      "endpoints": [
+        "https://updates.example.gh/gihm/{{target}}/{{arch}}/{{current_version}}"
+      ],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDI4NUZCNzE2MzM0NTVCODcKUldTSFcwVXpGcmRmS01JM2hmS2p1Y1BNcXdVeE5odDNrUHJBRytIYTI3SkpVYlc3ODhXejdJMkUK",
+      "windows": {
+        "installMode": "basicUi"
+      }
+    }
+  }
+}

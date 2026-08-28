@@ -14,6 +14,13 @@ export function fmtDateTime(iso: string | null | undefined): string {
   return new Intl.DateTimeFormat('en-GB', { timeZone: TZ, day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(iso));
 }
 
+export function fmtBytes(n: number | null | undefined): string {
+  if (n === null || n === undefined) return '—';
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
+  return `${(n / (1024 * 1024)).toFixed(2)} MB`;
+}
+
 export function fmtTime(iso: string | null | undefined): string {
   if (!iso) return '—';
   return new Intl.DateTimeFormat('en-GB', { timeZone: TZ, hour: '2-digit', minute: '2-digit' }).format(new Date(iso));
@@ -36,6 +43,19 @@ export function todayIso(): string {
 export function titleCase(s: string | null | undefined): string {
   if (!s) return '—';
   return s.replace(/_/g, ' ').replace(/\w\S*/g, (t) => t.charAt(0).toUpperCase() + t.slice(1).toLowerCase());
+}
+
+/**
+ * "Kumasi Metropolitan (DISTRICT)" style scope label for aggregate pages — the
+ * caller's own scope name (if any) plus its level, so a district director sees
+ * their district, a regional director their region, and a national user just
+ * the level.
+ */
+export function scopeLabel(scope: string | null | undefined, names: { regionName?: string | null; districtName?: string | null; facilityName?: string | null }): string {
+  const level = scope ? titleCase(scope) : '—';
+  const name =
+    scope === 'DISTRICT' ? names.districtName ?? names.regionName : scope === 'REGIONAL' ? names.regionName : scope === 'FACILITY' ? names.facilityName : null;
+  return name ? `${name} (${level})` : level;
 }
 
 export const FACILITY_TYPE_LABELS: Record<string, string> = {
@@ -75,6 +95,18 @@ export const VACCINE_LABELS: Record<string, string> = {
   COVID19: 'COVID-19',
 };
 
+/** Outreach languages offered on patient forms — must match the API's REMINDER_LANGUAGES. */
+export const LANGUAGE_OPTIONS: { value: string; label: string }[] = [
+  { value: 'EN', label: 'English' },
+  { value: 'TW', label: 'Twi (Asante)' },
+  { value: 'FA', label: 'Fante' },
+  { value: 'EE', label: 'Ewe' },
+  { value: 'GA', label: 'Ga' },
+  { value: 'HA', label: 'Hausa' },
+  { value: 'DA', label: 'Dagbani' },
+  { value: 'FR', label: 'French' },
+];
+
 export const SERVICE_LABELS: Record<string, string> = {
   OPD: 'Outpatient',
   EMERGENCY: 'Emergency',
@@ -95,4 +127,15 @@ export const SERVICE_LABELS: Record<string, string> = {
   DENTAL: 'Dental',
   CARDIOLOGY: 'Cardiology',
   GENERAL_WARD: 'General ward',
+  INPATIENT: 'Inpatient care',
+  NUTRITION: 'Nutrition & dietetics',
+  OPHTHALMOLOGY: 'Ophthalmology',
+  ENT: 'ENT',
+  DERMATOLOGY: 'Dermatology',
+  PSYCHIATRY: 'Psychiatry',
+  ONCOLOGY: 'Oncology',
+  NEPHROLOGY: 'Nephrology',
+  SCREENING: 'Health screening',
+  HOME_CARE: 'Home care',
+  FAMILY_PLANNING: 'Family planning',
 };

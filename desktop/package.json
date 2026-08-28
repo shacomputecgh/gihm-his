@@ -1,0 +1,17 @@
+{
+  "name": "@gihm/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "GIHM-HIS desktop shell (Tauri v2) — embeds the React PWA with native tray, offline device id and auto-update",
+  "scripts": {
+    "dev": "tauri dev",
+    "build": "tauri build",
+    "build:msi": "tauri build --bundles msi",
+    "build:nsis": "tauri build --bundles nsis",
+    "icon": "tauri icon",
+    "signer:generate": "tauri signer generate -w .signing/gihm-desktop.key"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.9.0"
+  }
+}

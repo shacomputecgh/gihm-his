@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import AddNewForm from '../../components/AddNewForm';
 import { api } from '../../lib/api';
 import type { StockItem, StockMovement } from '../../types';
 import { Badge, Button, Card, EmptyState, Field, Input, PageHeader, Select, Spinner, useToast } from '../../components/ui';
@@ -85,8 +86,24 @@ export default function Stock() {
 
   const visible = items ?? [];
 
+  const [showAdd, setShowAdd] = useState(false)
+  const [editingItem, setEditingItem] = useState<Record<string, string> | null>(null);
   return (
     <div>
+      <div className="flex justify-end mb-4">
+        <button onClick={() => setShowAdd(!showAdd)} className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition shadow">
+          {showAdd ? "\u2715 Cancel" : "+ Add New"}
+        </button>
+      </div>
+      {showAdd && (
+        <AddNewForm
+          title="Add New Inventory"
+          fields={[{"name": "itemName", "label": "Item Name", "type": "text", "placeholder": "e.g. Paracetamol 500mg", "required": true}, {"name": "category", "label": "Category", "type": "select", "options": ["Medicine", "Equipment", "Supplies", "Reagent"]}, {"name": "quantity", "label": "Quantity", "type": "number", "placeholder": "0", "required": true}, {"name": "unit", "label": "Unit", "type": "select", "options": ["Tablets", "Capsules", "Vials", "Bottles", "Boxes", "Packs"]}, {"name": "expiryDate", "label": "Expiry Date", "type": "date"}, {"name": "location", "label": "Storage Location", "type": "text", "placeholder": "e.g. Pharmacy Store A"}]}
+          onSave={(data) => { console.log("Saving:", data); setShowAdd(false); }}
+          initialData={editingItem}
+          onCancel={() => { setShowAdd(false); setEditingItem(null); }}
+        />
+      )}
       <PageHeader
         title="Stock & Inventory"
         subtitle="Health commodities with low-stock alerts and a full movement audit trail."

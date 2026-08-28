@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import AddNewForm from '../../components/AddNewForm';
 import { api } from '../../lib/api';
 import type { BloodDonor, BloodUnit, Patient, TransfusionRecord } from '../../types';
 import { Badge, Button, Card, EmptyState, Field, Input, PageHeader, Select, Segmented, Spinner, useToast } from '../../components/ui';
@@ -110,8 +111,24 @@ export default function BloodBank() {
     }
   }
 
+  const [showAdd, setShowAdd] = useState(false)
+  const [editingItem, setEditingItem] = useState<Record<string, string> | null>(null);
   return (
     <div>
+      <div className="flex justify-end mb-4">
+        <button onClick={() => setShowAdd(!showAdd)} className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition shadow">
+          {showAdd ? "\u2715 Cancel" : "+ Add New"}
+        </button>
+      </div>
+      {showAdd && (
+        <AddNewForm
+          title="Add New Blood Unit"
+          fields={[{"name":"bloodType","label":"Blood Type","type":"select","options":["A+","A-","B+","B-","AB+","AB-","O+","O-"],"required":true},{"name":"units","label":"Units Available","type":"number","required":true},{"name":"expiryDate","label":"Expiry Date","type":"date","required":true},{"name":"donorId","label":"Donor ID","type":"text"},{"name":"screeningResult","label":"Screening Result","type":"select","options":["Negative","Positive","Pending"]}]}
+          onSave={(data) => { console.log("Saving:", data); setShowAdd(false); }}
+          initialData={editingItem}
+          onCancel={() => { setShowAdd(false); setEditingItem(null); }}
+        />
+      )}
       <PageHeader
         title="Blood bank"
         subtitle="Donor registry, blood inventory, crossmatch and transfusion management."

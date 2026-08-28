@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GIHM-HIS — Ghana's Complete Hospital Management System</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
+  
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+    color: white;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+  }
+  
+  .slide {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: scale(0.95);
+    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+    padding: 40px;
+  }
+  
+  .slide.active {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+  }
+  
+  /* Ghana flag colors accent */
+  .flag-bar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 6px;
+    background: linear-gradient(90deg, #CE1126 33%, #FCD116 33% 66%, #006B3F 66%);
+    z-index: 100;
+  }
+  
+  /* Slide 1: Hero */
+  .slide-hero { background: radial-gradient(circle at 30% 50%, rgba(206,17,38,0.15), transparent 60%), radial-gradient(circle at 70% 50%, rgba(0,107,63,0.15), transparent 60%); }
+  .hero-logo { width: 120px; height: 120px; border-radius: 24px; background: linear-gradient(135deg, #CE1126, #006B3F); display: flex; align-items: center; justify-content: center; font-size: 48px; margin-bottom: 30px; animation: pulse 2s infinite; box-shadow: 0 20px 60px rgba(206,17,38,0.3); }
+  .hero-title { font-size: 52px; font-weight: 900; text-align: center; line-height: 1.1; margin-bottom: 16px; }
+  .hero-title span { background: linear-gradient(135deg, #CE1126, #FCD116); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .hero-subtitle { font-size: 20px; color: #94a3b8; text-align: center; max-width: 600px; }
+  .hero-badges { display: flex; gap: 16px; margin-top: 30px; flex-wrap: wrap; justify-content: center; }
+  .badge { padding: 10px 24px; border-radius: 50px; font-weight: 700; font-size: 14px; }
+  .badge-red { background: rgba(206,17,38,0.2); color: #ef4444; border: 1px solid rgba(206,17,38,0.3); }
+  .badge-yellow { background: rgba(252,209,22,0.2); color: #fbbf24; border: 1px solid rgba(252,209,22,0.3); }
+  .badge-green { background: rgba(0,107,63,0.2); color: #22c55e; border: 1px solid rgba(0,107,63,0.3); }
+  
+  /* Slide 2: Stats */
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; max-width: 900px; }
+  .stat-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 32px 24px; text-align: center; backdrop-filter: blur(10px); transition: transform 0.3s; }
+  .stat-card:hover { transform: translateY(-5px); }
+  .stat-number { font-size: 48px; font-weight: 900; }
+  .stat-number.red { color: #ef4444; }
+  .stat-number.yellow { color: #fbbf24; }
+  .stat-number.green { color: #22c55e; }
+  .stat-number.blue { color: #3b82f6; }
+  .stat-label { font-size: 14px; color: #94a3b8; margin-top: 8px; }
+  
+  /* Slide 3: Features */
+  .features-title { font-size: 36px; font-weight: 800; margin-bottom: 40px; text-align: center; }
+  .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 900px; }
+  .feature-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 24px; text-align: center; }
+  .feature-icon { font-size: 36px; margin-bottom: 12px; }
+  .feature-name { font-weight: 700; font-size: 16px; margin-bottom: 6px; }
+  .feature-desc { font-size: 12px; color: #94a3b8; line-height: 1.5; }
+  
+  /* Slide 4: Modules */
+  .modules-list { display: flex; flex-wrap: wrap; gap: 10px; max-width: 800px; justify-content: center; }
+  .module-tag { padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); }
+  .module-tag.highlight { background: rgba(206,17,38,0.15); border-color: rgba(206,17,38,0.3); color: #ef4444; }
+  
+  /* Slide 5: Languages */
+  .lang-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; max-width: 700px; }
+  .lang-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 24px; text-align: center; }
+  .lang-flag { font-size: 40px; margin-bottom: 8px; }
+  .lang-name { font-weight: 700; font-size: 18px; }
+  .lang-native { font-size: 14px; color: #94a3b8; }
+  
+  /* Slide 6: Pricing */
+  .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; max-width: 900px; }
+  .price-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 32px; text-align: center; }
+  .price-card.featured { border-color: #CE1126; background: rgba(206,17,38,0.1); }
+  .price-name { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+  .price-amount { font-size: 40px; font-weight: 900; margin-bottom: 4px; }
+  .price-period { font-size: 14px; color: #94a3b8; margin-bottom: 16px; }
+  .price-features { text-align: left; font-size: 13px; color: #cbd5e1; line-height: 2; }
+  
+  /* Slide 7: CTA */
+  .cta-title { font-size: 44px; font-weight: 900; text-align: center; margin-bottom: 16px; }
+  .cta-subtitle { font-size: 18px; color: #94a3b8; text-align: center; margin-bottom: 40px; }
+  .cta-buttons { display: flex; gap: 16px; }
+  .cta-btn { padding: 16px 40px; border-radius: 12px; font-size: 18px; font-weight: 700; border: none; cursor: pointer; transition: transform 0.2s; }
+  .cta-btn:hover { transform: scale(1.05); }
+  .cta-btn-red { background: #CE1126; color: white; }
+  .cta-btn-green { background: #006B3F; color: white; }
+  
+  /* Progress dots */
+  .dots { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 100; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.2); transition: all 0.3s; }
+  .dot.active { background: #CE1126; width: 30px; border-radius: 5px; }
+  
+  /* ShaComputeC watermark */
+  .watermark { position: fixed; bottom: 16px; right: 24px; font-size: 12px; color: rgba(255,255,255,0.15); z-index: 100; }
+  
+  /* Counter animation */
+  @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+  @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+  .float { animation: float 3s ease-in-out infinite; }
+  
+  /* Slide title */
+  .slide-title { font-size: 36px; font-weight: 800; text-align: center; margin-bottom: 40px; }
+  
+  /* Phone mockup */
+  .phone-mockup { width: 220px; height: 400px; background: #1e293b; border-radius: 30px; border: 3px solid #334155; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+  .phone-header { height: 40px; background: #CE1126; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+  .phone-body { padding: 10px; }
+  .phone-row { display: flex; gap: 6px; margin-bottom: 6px; }
+  .phone-block { flex: 1; height: 40px; background: rgba(255,255,255,0.05); border-radius: 8px; }
+  .phone-block.tall { height: 60px; }
+  .phone-block.accent { background: rgba(206,17,38,0.2); }
+  .phone-block.green { background: rgba(0,107,63,0.2); }
+  .phone-block.yellow { background: rgba(252,209,22,0.2); }
+</style>
+</head>
+<body>
+
+<div class="flag-bar"></div>
+
+<!-- Slide 1: Hero -->
+<div class="slide slide-hero active" id="slide-0">
+  <div class="hero-logo float">🏥</div>
+  <h1 class="hero-title"><span>GIHM-HIS</span></h1>
+  <p class="hero-subtitle">Ghana's Complete Hospital Management System — built for every hospital in every region</p>
+  <div class="hero-badges">
+    <span class="badge badge-red">300+ Modules</span>
+    <span class="badge badge-yellow">16 Regions</span>
+    <span class="badge badge-green">261 Districts</span>
+  </div>
+</div>
+
+<!-- Slide 2: Stats -->
+<div class="slide" id="slide-1">
+  <h2 class="slide-title">Built for <span style="color:#CE1126">Ghana</span></h2>
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-number red">300+</div>
+      <div class="stat-label">Integrated Modules</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number yellow">7</div>
+      <div class="stat-label">Ghanaian Languages</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number green">24/7</div>
+      <div class="stat-label">Support & AI Assistant</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number blue">100%</div>
+      <div class="stat-label">Offline-First</div>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 3: Features -->
+<div class="slide" id="slide-2">
+  <h2 class="features-title">Everything Your Hospital Needs</h2>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">💊</div>
+      <div class="feature-name">Pharmacy</div>
+      <div class="feature-desc">Drug inventory, prescriptions, dispensing, controlled substances, NHIS billing</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔬</div>
+      <div class="feature-name">Laboratory</div>
+      <div class="feature-desc">Test orders, results, barcode tracking, quality control, blood bank</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🚑</div>
+      <div class="feature-name">Emergency</div>
+      <div class="feature-desc">ESI triage, ambulance dispatch, crash cart tracking, Code Blue alerts</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🛏️</div>
+      <div class="feature-name">Inpatient</div>
+      <div class="feature-desc">Admissions, ward management, bed occupancy, nursing care plans</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">💰</div>
+      <div class="feature-name">Billing</div>
+      <div class="feature-desc">Paystack, Mobile Money, NHIS claims, insurance, receipts in PDF</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🤖</div>
+      <div class="feature-name">Dr. August AI</div>
+      <div class="feature-desc">Health encyclopedia, drug interactions, clinical guidelines, system help</div>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 4: 300+ Modules -->
+<div class="slide" id="slide-3">
+  <h2 class="slide-title">300+ <span style="color:#FCD116">Modules</span></h2>
+  <div class="modules-list">
+    <div class="module-tag highlight">Pharmacy</div>
+    <div class="module-tag highlight">Laboratory</div>
+    <div class="module-tag highlight">Emergency</div>
+    <div class="module-tag">OPD Queue</div>
+    <div class="module-tag">Admissions</div>
+    <div class="module-tag">Maternity</div>
+    <div class="module-tag">Theatre</div>
+    <div class="module-tag">Radiology</div>
+    <div class="module-tag">Blood Bank</div>
+    <div class="module-tag">ICU Monitoring</div>
+    <div class="module-tag">NICU Tracking</div>
+    <div class="module-tag">Telemedicine</div>
+    <div class="module-tag">Mental Health</div>
+    <div class="module-tag">Dental Clinic</div>
+    <div class="module-tag">Physiotherapy</div>
+    <div class="module-tag">Ophthalmology</div>
+    <div class="module-tag">Oncology</div>
+    <div class="module-tag">Nephrology</div>
+    <div class="module-tag">Cardiology</div>
+    <div class="module-tag">Infection Control</div>
+    <div class="module-tag">Surveillance</div>
+    <div class="module-tag">NHIS Claims</div>
+    <div class="module-tag">ID Cards</div>
+    <div class="module-tag">Wristband Printing</div>
+    <div class="module-tag">Patient Tracking</div>
+    <div class="module-tag">Staff Scheduling</div>
+    <div class="module-tag">Budget Tracking</div>
+    <div class="module-tag">Quality Indicators</div>
+    <div class="module-tag">COVID-19</div>
+    <div class="module-tag">Cancer Registry</div>
+    <div class="module-tag">Drug Database</div>
+    <div class="module-tag">Clinical Guidelines</div>
+  </div>
+</div>
+
+<!-- Slide 5: Languages -->
+<div class="slide" id="slide-4">
+  <h2 class="slide-title">Speak Your <span style="color:#22c55e">Language</span></h2>
+  <div class="lang-grid">
+    <div class="lang-card">
+      <div class="lang-flag">🇬🇧</div>
+      <div class="lang-name">English</div>
+      <div class="lang-native">Default</div>
+    </div>
+    <div class="lang-card">
+      <div class="lang-flag">🇬🇭</div>
+      <div class="lang-name">Twi / Akan</div>
+      <div class="lang-native">Akan</div>
+    </div>
+    <div class="lang-card">
+      <div class="lang-flag">🇬🇭</div>
+      <div class="lang-name">Fante</div>
+      <div class="lang-native">Fante</div>
+    </div>
+    <div class="lang-card">
+      <div class="lang-flag">🇬🇭</div>
+      <div class="lang-name">Ga</div>
+      <div class="lang-native">Ga</div>
+    </div>
+    <div class="lang-card">
+      <div class="lang-flag">🇬🇭</div>
+      <div class="lang-name">Ewe</div>
+      <div class="lang-native">Eʋegbe</div>
+    </div>
+    <div class="lang-card">
+      <div class="lang-flag">🇳🇬</div>
+      <div class="lang-name">Hausa</div>
+      <div class="lang-native">Hausa</div>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 6: Pricing -->
+<div class="slide" id="slide-5">
+  <h2 class="slide-title">Choose Your <span style="color:#3b82f6">Plan</span></h2>
+  <div class="pricing-grid">
+    <div class="price-card">
+      <div class="price-name">Basic</div>
+      <div class="price-amount" style="color:#22c55e">GH₵ 5,000</div>
+      <div class="price-period">per region / year</div>
+      <div class="price-features">✅ OPD & Queue Management<br>✅ Patient Registration<br>✅ Basic Pharmacy<br>✅ Basic Billing<br>✅ 5 User Accounts</div>
+    </div>
+    <div class="price-card featured">
+      <div class="price-name" style="color:#CE1126">Professional</div>
+      <div class="price-amount" style="color:#CE1126">GH₵ 15,000</div>
+      <div class="price-period">per region / year</div>
+      <div class="price-features">✅ Everything in Basic<br>✅ Full Pharmacy & Lab<br>✅ Emergency & Theatre<br>✅ NHIS Claims<br>✅ Unlimited Users<br>✅ AI Assistant</div>
+    </div>
+    <div class="price-card">
+      <div class="price-name">Enterprise</div>
+      <div class="price-amount" style="color:#fbbf24">GH₵ 30,000</div>
+      <div class="price-period">per region / year</div>
+      <div class="price-features">✅ Everything in Pro<br>✅ National Analytics<br>✅ DHIMS2 Integration<br>✅ Custom API Access<br>✅ Priority Support<br>✅ White Label Option</div>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 7: CTA -->
+<div class="slide" id="slide-6">
+  <div class="hero-logo float" style="width:100px;height:100px;border-radius:20px;font-size:40px">🏥</div>
+  <h2 class="cta-title">Start Your <span style="color:#CE1126">Free Trial</span> Today</h2>
+  <p class="cta-subtitle">30 days free. No credit card. No commitment.<br>Works offline. Installs in minutes.</p>
+  <div class="cta-buttons">
+    <button class="cta-btn cta-btn-red" onclick="window.open('https://web-one-xi-46.vercel.app/purchase','_blank')">💳 Purchase Now</button>
+    <button class="cta-btn cta-btn-green" onclick="window.open('https://web-one-xi-46.vercel.app','_blank')">🚀 Try Free</button>
+  </div>
+  <div style="margin-top:40px;text-align:center">
+    <p style="color:#94a3b8;font-size:14px">Developed by <strong style="color:white">ShaComputeC</strong></p>
+    <p style="color:#64748b;font-size:12px;margin-top:4px">📧 shacomputec@gmail.com · 📞 +233 530 941 750</p>
+    <div style="display:flex;gap:16px;justify-content:center;margin-top:16px">
+      <a href="https://web.facebook.com/shacomputecgh" target="_blank" style="color:#3b82f6;text-decoration:none;font-size:13px">Facebook</a>
+      <a href="https://www.youtube.com/@shacomputec" target="_blank" style="color:#ef4444;text-decoration:none;font-size:13px">YouTube</a>
+      <a href="https://whatsapp.com/channel/shacomputec" target="_blank" style="color:#22c55e;text-decoration:none;font-size:13px">WhatsApp</a>
+    </div>
+  </div>
+</div>
+
+<!-- Dots -->
+<div class="dots" id="dots"></div>
+<div class="watermark">ShaComputeC · Hard Works Never Fail</div>
+
+<script>
+  const TOTAL = 7;
+  const INTERVAL = 4000; // 4 seconds per slide
+  let current = 0;
+  
+  // Create dots
+  const dotsEl = document.getElementById('dots');
+  for (let i = 0; i < TOTAL; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'dot' + (i === 0 ? ' active' : '');
+    dot.onclick = () => goTo(i);
+    dotsEl.appendChild(dot);
+  }
+  
+  function goTo(n) {
+    document.getElementById('slide-' + current).classList.remove('active');
+    dotsEl.children[current].classList.remove('active');
+    current = n;
+    document.getElementById('slide-' + current).classList.add('active');
+    dotsEl.children[current].classList.add('active');
+  }
+  
+  function next() {
+    goTo((current + 1) % TOTAL);
+  }
+  
+  setInterval(next, INTERVAL);
+</script>
+</body>
+</html>

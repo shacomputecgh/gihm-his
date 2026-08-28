@@ -80,25 +80,79 @@ describe('referrals', () => {
     expect(body.items.some((r: { id: string }) => r.id === referral.id)).toBe(true);
   });
 
-  it('transitions referral status through the allowed flow', async () => {
+  it('transitions referral status through the allowed flow, role-aware', async () => {
     const patientId = await makePatient('Referral Patient B (synthetic)');
     const receiving = await makeFacility('Transition Hospital (synthetic)');
+    // The receiving facility's own staff — only they may receive/accept.
+    const receiver = await makeUser({ roleCode: 'HOSPITAL_ADMIN', facilityId: receiving.id, permissions: PERMS });
     const created = await app.inject({ method: 'POST', url: '/api/v1/referrals', headers: auth(staff.token), payload: { patientId, toFacilityId: receiving.id, urgency: 'ROUTINE' } });
     const referral = created.json().referral;
 
+    // SUBMITTED cannot jump to ACCEPTED directly (flow guard).
     const accept = await app.inject({ method: 'POST', url: `/api/v1/referrals/${referral.id}/status`, headers: auth(staff.token), payload: { status: 'ACCEPTED' } });
-    expect(accept.statusCode).toBe(409); // SUBMITTED cannot jump to ACCEPTED directly
+    expect(accept.statusCode).toBe(409);
 
-    const recv = await app.inject({ method: 'POST', url: `/api/v1/referrals/${referral.id}/status`, headers: auth(staff.token), payload: { status: 'RECEIVED' } });
+    // The SENDING facility may not mark its own referral received (role guard).
+    const senderRecv = await app.inject({ method: 'POST', url: `/api/v1/referrals/${referral.id}/status`, headers: auth(staff.token), payload: { status: 'RECEIVED' } });
+    expect(senderRecv.statusCode).toBe(403);
+
+    // The receiving facility receives, then accepts — with a note + timestamp.
+    const recv = await app.inject({ method: 'POST', url: `/api/v1/referrals/${referral.id}/status`, headers: auth(receiver.token), payload: { status: 'RECEIVED', note: 'Patient received in casualty' } });
     expect(recv.statusCode).toBe(200);
     expect(recv.json().referral.status).toBe('RECEIVED');
+    expect(recv.json().referral.receivedAt).toBeTruthy();
+    expect(recv.json().referral.note).toBe('Patient received in casualty');
 
-    const accept2 = await app.inject({ method: 'POST', url: `/api/v1/referrals/${referral.id}/status`, headers: auth(staff.token), payload: { status: 'ACCEPTED' } });
+    const accept2 = await app.inject({ method: 'POST', url: `/api/v1/referrals/${referral.id}/status`, headers: auth(receiver.token), payload: { status: 'ACCEPTED' } });
     expect(accept2.statusCode).toBe(200);
+    expect(accept2.json().referral.acceptedAt).toBeTruthy();
+
+    // The receiving facility cannot complete the referral — only the sender can.
+    const receiverDone = await app.inject({ method: 'POST', url: `/api/v1/referrals/${referral.id}/status`, headers: auth(receiver.token), payload: { status: 'COMPLETED' } });
+    expect(receiverDone.statusCode).toBe(403);
 
     const done = await app.inject({ method: 'POST', url: `/api/v1/referrals/${referral.id}/status`, headers: auth(staff.token), payload: { status: 'COMPLETED' } });
     expect(done.statusCode).toBe(200);
     expect(done.json().referral.status).toBe('COMPLETED');
+    expect(done.json().referral.completedAt).toBeTruthy();
+  });
+
+  it('assigns an ambulance for transport and releases it on arrival', async () => {
+    const patientId = await makePatient('Referral Transport Patient (synthetic)');
+    const receiving = await makeFacility('Transport Receiving Hospital (synthetic)');
+    const receiver = await makeUser({ roleCode: 'HOSPITAL_ADMIN', facilityId: receiving.id, permissions: PERMS });
+    const ambulance = await db.ambulance.create({ data: { facilityId: receiving.id, registration: `GV-${Math.random().toString(36).slice(2, 7).toUpperCase()}-T`, status: 'AVAILABLE' } });
+    const created = await app.inject({ method: 'POST', url: '/api/v1/referrals', headers: auth(staff.token), payload: { patientId, toFacilityId: receiving.id, urgency: 'URGENT' } });
+    const referral = created.json().referral;
+
+    const recv = await app.inject({ method: 'POST', url: `/api/v1/referrals/${referral.id}/status`, headers: auth(receiver.token), payload: { status: 'RECEIVED' } });
+    expect(recv.statusCode).toBe(200);
+    const accept = await app.inject({ method: 'POST', url: `/api/v1/referrals/${referral.id}/status`, headers: auth(receiver.token), payload: { status: 'ACCEPTED' } });
+    expect(accept.statusCode).toBe(200);
+
+    // Assign the receiving fleet's ambulance when transport starts.
+    const awaitT = await app.inject({ method: 'POST', url: `/api/v1/referrals/${referral.id}/status`, headers: auth(receiver.token), payload: { status: 'AWAITING_TRANSPORT', ambulanceId: ambulance.id } });
+    expect(awaitT.statusCode).toBe(200);
+    expect(awaitT.json().referral.ambulanceId).toBe(ambulance.id);
+    expect((await db.ambulance.findUnique({ where: { id: ambulance.id } }))?.status).toBe('ASSIGNED');
+
+    const transit = await app.inject({ method: 'POST', url: `/api/v1/referrals/${referral.id}/status`, headers: auth(receiver.token), payload: { status: 'IN_TRANSIT' } });
+    expect(transit.statusCode).toBe(200);
+    expect((await db.ambulance.findUnique({ where: { id: ambulance.id } }))?.status).toBe('TRANSPORTING');
+
+    // Arrival releases the ambulance back to the fleet.
+    const arrived = await app.inject({ method: 'POST', url: `/api/v1/referrals/${referral.id}/status`, headers: auth(receiver.token), payload: { status: 'ARRIVED' } });
+    expect(arrived.statusCode).toBe(200);
+    expect((await db.ambulance.findUnique({ where: { id: ambulance.id } }))?.status).toBe('AVAILABLE');
+
+    // A busy ambulance cannot be assigned to a second referral.
+    const second = await app.inject({ method: 'POST', url: '/api/v1/referrals', headers: auth(staff.token), payload: { patientId, toFacilityId: receiving.id, urgency: 'ROUTINE' } });
+    const secondId = second.json().referral.id;
+    await app.inject({ method: 'POST', url: `/api/v1/referrals/${secondId}/status`, headers: auth(receiver.token), payload: { status: 'RECEIVED' } });
+    await app.inject({ method: 'POST', url: `/api/v1/referrals/${secondId}/status`, headers: auth(receiver.token), payload: { status: 'ACCEPTED' } });
+    await db.ambulance.update({ where: { id: ambulance.id }, data: { status: 'ASSIGNED' } });
+    const conflict = await app.inject({ method: 'POST', url: `/api/v1/referrals/${secondId}/status`, headers: auth(receiver.token), payload: { status: 'AWAITING_TRANSPORT', ambulanceId: ambulance.id } });
+    expect(conflict.statusCode).toBe(409);
   });
 });
 
@@ -120,9 +174,18 @@ describe('regional scope (facility-tagged entities without a patient relation)',
         regionId: otherRegion.id, districtId: otherDistrict.id, services: '["OPD"]', departmentsJson: '[]', openingHours: '{}', isSynthetic: true, status: 'ACTIVE',
       },
     });
-    await db.stockItem.create({ data: { facilityId: other.id, name: 'Out-of-region item (synthetic)', quantity: 5, reorderLevel: 1 } });
-    const names = stock.json().items.map((i: { name: string }) => i.name);
-    expect(names).not.toContain('Out-of-region item (synthetic)');
+    try {
+      await db.stockItem.create({ data: { facilityId: other.id, name: 'Out-of-region item (synthetic)', quantity: 5, reorderLevel: 1 } });
+      const names = stock.json().items.map((i: { name: string }) => i.name);
+      expect(names).not.toContain('Out-of-region item (synthetic)');
+    } finally {
+      // Never leak geography rows into the shared test DB (other files, e.g.
+      // the directorate national view, assert on the live region table).
+      await db.stockItem.deleteMany({ where: { facilityId: other.id } });
+      await db.facility.deleteMany({ where: { id: other.id } });
+      await db.district.deleteMany({ where: { id: otherDistrict.id } });
+      await db.region.deleteMany({ where: { id: otherRegion.id } });
+    }
   });
 });
 

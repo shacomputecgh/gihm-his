@@ -51,6 +51,9 @@ export default function FacilityProfile() {
                   <span>{FACILITY_TYPE_LABELS[facility.type] ?? titleCase(facility.type)}</span>
                   <span>·</span>
                   <span>{facility.district?.name}, {facility.region?.name}</span>
+                  <Badge tone={facility.ownership === 'PRIVATE' || facility.ownership === 'NGO' ? 'gold' : 'navy'} className="border-white/20 bg-white/10">
+                    {facility.ownership === 'PRIVATE' || facility.ownership === 'NGO' ? '💼 Private' : '🏛 Government'}
+                  </Badge>
                   {facility.isSynthetic && <Badge tone="gold" className="border-white/20 bg-white/10 text-g-gold">DEMO</Badge>}
                 </p>
               </div>

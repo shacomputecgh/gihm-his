@@ -11,9 +11,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icons/icon.svg'],
       manifest: {
-        name: 'GIHM-HIS — Ghana Health Platform',
+        name: 'GIHM-HIS — Ghana Health Platform | ShaComputeC',
         short_name: 'GIHM-HIS',
-        description: 'Ghana Integrated Health Management & Hospital Information System (foundation prototype)',
+        description: 'Ghana Integrated Health Management & Hospital Information System by ShaComputeC (Hard Works Never Fail)',
         theme_color: '#12203a',
         background_color: '#ffffff',
         display: 'standalone',
@@ -26,6 +26,18 @@ export default defineConfig({
       },
     }),
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Core React libraries
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          // Leaflet (heavy GIS library — only loaded on /app/gis)
+          'vendor-leaflet': ['leaflet'],
+        },
+      },
+    },
+  },
   server: {
     port: 5173,
     proxy: {

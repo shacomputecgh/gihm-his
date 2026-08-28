@@ -1,0 +1,57 @@
+{
+  "name": "gihm-his-desktop",
+  "version": "1.0.0",
+  "description": "GIHM-HIS - Ghana Integrated Health Management System by ShaComputeC",
+  "author": "ShaComputeC <shacomputec@gmail.com>",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win"
+  },
+  "build": {
+    "appId": "com.shacomputec.gihm-his",
+    "productName": "GIHM-HIS",
+    "artifactName": "GIHM-HIS-${version}-${arch}-Setup.${ext}",
+    "win": {
+      "icon": "icons/icon.ico",
+      "target": ["nsis"],
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "icons/icon.ico",
+      "uninstallerIcon": "icons/icon.ico",
+      "installerHeaderIcon": "icons/icon.ico",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "GIHM-HIS",
+      "unicode": true
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "icons/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "frontend",
+        "to": "frontend"
+      },
+      {
+        "from": "api",
+        "to": "api"
+      },
+      {
+        "from": "data",
+        "to": "data"
+      }
+    ],
+    "compression": "maximum"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  }
+}

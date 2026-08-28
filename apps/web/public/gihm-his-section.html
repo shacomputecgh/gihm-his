@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GIHM-HIS - Hospital Management System</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; }
+  .gihm-section {
+    max-width: 900px;
+    margin: 40px auto;
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    border: 2px solid #e2e8f0;
+  }
+  .gihm-header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #16a34a 100%);
+    padding: 40px;
+    text-align: center;
+    color: white;
+  }
+  .gihm-logo {
+    width: 80px;
+    height: 80px;
+    border-radius: 16px;
+    object-fit: contain;
+    margin-bottom: 16px;
+    background: white;
+    padding: 8px;
+  }
+  .gihm-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(22, 163, 74, 0.15);
+    border: 1px solid rgba(22, 163, 74, 0.3);
+    color: #4ade80;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 20px;
+  }
+  .gihm-badge::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background: #4ade80;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .gihm-header h2 {
+    font-size: 32px;
+    font-weight: 800;
+    margin-bottom: 12px;
+  }
+  .gihm-header p {
+    font-size: 16px;
+    color: #cbd5e1;
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+  .gihm-body {
+    padding: 40px;
+  }
+  .gihm-features {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  .gihm-feature {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: #475569;
+  }
+  .gihm-feature .check {
+    color: #16a34a;
+    font-size: 18px;
+    font-weight: bold;
+  }
+  .gihm-modules {
+    background: #f1f5f9;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 32px;
+  }
+  .gihm-modules h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+  }
+  .gihm-module-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .gihm-module-tags span {
+    background: white;
+    border: 1px solid #e2e8f0;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    color: #475569;
+    font-weight: 500;
+  }
+  .gihm-buttons {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .gihm-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 32px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.2s;
+    cursor: pointer;
+    border: none;
+  }
+  .gihm-btn-primary {
+    background: #16a34a;
+    color: white;
+    box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+  }
+  .gihm-btn-primary:hover {
+    background: #15803d;
+    box-shadow: 0 6px 20px rgba(22, 163, 74, 0.4);
+    transform: translateY(-1px);
+  }
+  .gihm-btn-secondary {
+    background: white;
+    color: #334155;
+    border: 2px solid #e2e8f0;
+  }
+  .gihm-btn-secondary:hover {
+    border-color: #0f172a;
+    color: #0f172a;
+  }
+  .gihm-dev {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .gihm-dev img {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    object-fit: contain;
+  }
+  .gihm-dev-info {
+    flex: 1;
+  }
+  .gihm-dev-info h4 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #0f172a;
+  }
+  .gihm-dev-info p {
+    font-size: 13px;
+    color: #64748b;
+  }
+  .gihm-dev-links {
+    display: flex;
+    gap: 16px;
+    font-size: 13px;
+  }
+  .gihm-dev-links a {
+    color: #16a34a;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .gihm-dev-links a:hover {
+    text-decoration: underline;
+  }
+  @media (max-width: 640px) {
+    .gihm-features { grid-template-columns: 1fr; }
+    .gihm-header h2 { font-size: 24px; }
+    .gihm-buttons { flex-direction: column; }
+    .gihm-btn { justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="gihm-section">
+  <div class="gihm-header">
+    <img src="shacomputec-logo.png" alt="GIHM-HIS" class="gihm-logo">
+    <div class="gihm-badge">FREE 30-DAY TRIAL</div>
+    <h2>Explore GIHM-HIS</h2>
+    <p>Ghana's complete hospital management system with 300+ modules — pharmacy, laboratory, billing, theatre, maternity, emergency, ID cards, AI assistant, and more. Try it free for 30 days.</p>
+  </div>
+  <div class="gihm-body">
+    <div class="gihm-features">
+      <div class="gihm-feature"><span class="check">✓</span> 300+ integrated modules</div>
+      <div class="gihm-feature"><span class="check">✓</span> Multi-language support</div>
+      <div class="gihm-feature"><span class="check">✓</span> PDF export & ID cards</div>
+      <div class="gihm-feature"><span class="check">✓</span> WhatsApp & SMS integration</div>
+      <div class="gihm-feature"><span class="check">✓</span> ShaComputeC AI assistant</div>
+      <div class="gihm-feature"><span class="check">✓</span> Offline-first design</div>
+      <div class="gihm-feature"><span class="check">✓</span> Paystack online payments</div>
+      <div class="gihm-feature"><span class="check">✓</span> 24/7 technical support</div>
+    </div>
+
+    <div class="gihm-modules">
+      <h4>Key Modules</h4>
+      <div class="gihm-module-tags">
+        <span>Pharmacy</span>
+        <span>Laboratory</span>
+        <span>Billing</span>
+        <span>Theatre</span>
+        <span>Maternity</span>
+        <span>Emergency</span>
+        <span>ICU/NICU</span>
+        <span>Blood Bank</span>
+        <span>Radiology</span>
+        <span>Telemedicine</span>
+        <span>Insurance/NHIS</span>
+        <span>ID Card Builder</span>
+        <span>AI Assistant</span>
+        <span>Ward Management</span>
+        <span>Clinical Notes</span>
+        <span>Drug Database</span>
+        <span>Surveillance</span>
+        <span>Reports & Analytics</span>
+      </div>
+    </div>
+
+    <div class="gihm-buttons">
+      <a href="https://shacomputecghapp.unaux.com/login" class="gihm-btn gihm-btn-primary">
+        Start Free Trial →
+      </a>
+      <a href="https://shacomputecghapp.unaux.com/" class="gihm-btn gihm-btn-secondary">
+        Visit Full Website
+      </a>
+    </div>
+
+    <div class="gihm-dev">
+      <img src="shacomputec-logo.png" alt="ShaComputeC">
+      <div class="gihm-dev-info">
+        <h4>Built by ShaComputeC</h4>
+        <p>Hard Works Never Fail · Enterprise-grade hospital management</p>
+      </div>
+      <div class="gihm-dev-links">
+        <a href="mailto:shacomputec@gmail.com">shacomputec@gmail.com</a>
+        <a href="tel:+233530941750">+233 530 941 750</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

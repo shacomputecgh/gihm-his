@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ShaComputeC - Hospital Management System Developer</title>
+<link rel="icon" href="../shacomputec-logo.png" type="image/png">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; background: #f8fafc; color: #1e293b; line-height: 1.6; }
+  a { text-decoration: none; color: inherit; }
+
+  /* NAV */
+  .nav { background: #0f172a; padding: 0 24px; position: sticky; top: 0; z-index: 100; }
+  .nav-inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 64px; }
+  .nav-brand { display: flex; align-items: center; gap: 12px; }
+  .nav-brand img { height: 40px; width: 40px; border-radius: 10px; object-fit: contain; background: white; padding: 4px; }
+  .nav-brand span { color: white; font-weight: 700; font-size: 18px; }
+  .nav-links { display: flex; gap: 24px; align-items: center; }
+  .nav-links a { color: #94a3b8; font-size: 14px; font-weight: 500; transition: color 0.2s; }
+  .nav-links a:hover { color: white; }
+  .nav-cta { background: #16a34a; color: white !important; padding: 8px 20px; border-radius: 8px; font-weight: 700 !important; transition: background 0.2s !important; }
+  .nav-cta:hover { background: #15803d !important; }
+
+  /* HERO */
+  .hero { background: linear-gradient(135deg, #0f172a 0%, #1e293b 40%, #0f4a2e 100%); color: white; padding: 80px 24px; text-align: center; position: relative; overflow: hidden; }
+  .hero::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at 30% 40%, rgba(252, 209, 22, 0.08) 0%, transparent 50%), radial-gradient(circle at 70% 60%, rgba(206, 17, 38, 0.06) 0%, transparent 40%); }
+  .hero-inner { max-width: 800px; margin: 0 auto; position: relative; }
+  .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; color: #fcd116; margin-bottom: 24px; }
+  .hero h1 { font-size: 48px; font-weight: 800; line-height: 1.1; margin-bottom: 16px; }
+  .hero h1 span { color: #fcd116; }
+  .hero p { font-size: 18px; color: #94a3b8; max-width: 600px; margin: 0 auto 32px; }
+  .hero-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 14px 32px; border-radius: 12px; font-size: 15px; font-weight: 700; transition: all 0.2s; cursor: pointer; border: none; }
+  .btn-green { background: #16a34a; color: white; box-shadow: 0 4px 12px rgba(22,163,74,0.3); }
+  .btn-green:hover { background: #15803d; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(22,163,74,0.4); }
+  .btn-outline { background: transparent; color: white; border: 2px solid rgba(255,255,255,0.3); }
+  .btn-outline:hover { border-color: white; background: rgba(255,255,255,0.1); }
+  .btn-red { background: #ce1126; color: white; }
+  .btn-red:hover { background: #b00e20; transform: translateY(-1px); }
+  .hero-stats { display: flex; gap: 40px; justify-content: center; margin-top: 48px; }
+  .hero-stat strong { display: block; font-size: 28px; font-weight: 800; color: #fcd116; }
+  .hero-stat span { font-size: 13px; color: #64748b; }
+
+  /* SECTIONS */
+  .section { max-width: 1100px; margin: 0 auto; padding: 80px 24px; }
+  .section-title { text-align: center; margin-bottom: 48px; }
+  .section-title h2 { font-size: 32px; font-weight: 800; color: #0f172a; }
+  .section-title p { color: #64748b; max-width: 500px; margin: 8px auto 0; }
+
+  /* CTA SECTION */
+  .cta-section { background: #0f172a; padding: 60px 24px; text-align: center; color: white; }
+  .cta-section h2 { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
+  .cta-section p { color: #94a3b8; margin-bottom: 24px; }
+  .cta-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+
+  /* GIHM-HIS SECTION */
+  .gihm-section { background: white; border: 2px solid #e2e8f0; border-radius: 24px; overflow: hidden; margin: 0 24px; max-width: 1052px; margin-left: auto; margin-right: auto; box-shadow: 0 4px 24px rgba(0,0,0,0.06); }
+  .gihm-header { background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #16a34a 100%); padding: 48px; text-align: center; color: white; }
+  .gihm-logo { width: 80px; height: 80px; border-radius: 16px; object-fit: contain; margin-bottom: 16px; background: white; padding: 8px; }
+  .gihm-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(22,163,74,0.15); border: 1px solid rgba(22,163,74,0.3); color: #4ade80; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 20px; }
+  .gihm-badge::before { content: ''; width: 8px; height: 8px; background: #4ade80; border-radius: 50%; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .gihm-header h2 { font-size: 36px; font-weight: 800; margin-bottom: 12px; }
+  .gihm-header p { font-size: 16px; color: #cbd5e1; max-width: 600px; margin: 0 auto; line-height: 1.6; }
+  .gihm-body { padding: 40px 48px; }
+  .gihm-features { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 32px; }
+  .gihm-feat { display: flex; align-items: center; gap: 10px; font-size: 14px; color: #475569; }
+  .gihm-feat .ck { color: #16a34a; font-size: 18px; font-weight: bold; }
+  .gihm-modules { background: #f1f5f9; border-radius: 12px; padding: 20px; margin-bottom: 32px; }
+  .gihm-modules h4 { font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+  .gihm-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+  .gihm-tags span { background: white; border: 1px solid #e2e8f0; padding: 5px 14px; border-radius: 20px; font-size: 12px; color: #475569; font-weight: 500; }
+  .gihm-buttons { display: flex; gap: 16px; flex-wrap: wrap; }
+  .gihm-dev { margin-top: 32px; padding-top: 24px; border-top: 1px solid #e2e8f0; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .gihm-dev img { width: 48px; height: 48px; border-radius: 12px; object-fit: contain; }
+  .gihm-dev-info { flex: 1; }
+  .gihm-dev-info h4 { font-size: 16px; font-weight: 700; }
+  .gihm-dev-info p { font-size: 13px; color: #64748b; }
+  .gihm-dev-links { display: flex; gap: 16px; font-size: 13px; }
+  .gihm-dev-links a { color: #16a34a; font-weight: 600; }
+  .gihm-dev-links a:hover { text-decoration: underline; }
+
+  /* PRICING */
+  .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .price-card { background: white; border: 2px solid #e2e8f0; border-radius: 20px; padding: 32px; position: relative; }
+  .price-card.popular { border-color: #16a34a; box-shadow: 0 8px 30px rgba(22,163,74,0.15); transform: scale(1.03); }
+  .price-pop { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: #16a34a; color: white; padding: 4px 16px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; }
+  .price-card h3 { font-size: 20px; font-weight: 700; }
+  .price-card .desc { font-size: 13px; color: #64748b; margin: 4px 0 16px; }
+  .price-amount { font-size: 36px; font-weight: 800; color: #0f172a; }
+  .price-amount span { font-size: 14px; font-weight: 500; color: #94a3b8; }
+  .price-list { list-style: none; margin: 24px 0; }
+  .price-list li { padding: 6px 0; font-size: 14px; color: #475569; display: flex; align-items: center; gap: 8px; }
+  .price-list li::before { content: '✓'; color: #16a34a; font-weight: 700; }
+  .price-btn { display: block; width: 100%; text-align: center; padding: 12px; border-radius: 12px; font-weight: 700; font-size: 14px; border: 2px solid #e2e8f0; color: #334155; transition: all 0.2s; }
+  .price-btn:hover { border-color: #16a34a; color: #16a34a; }
+  .price-card.popular .price-btn { background: #16a34a; color: white; border-color: #16a34a; }
+  .price-card.popular .price-btn:hover { background: #15803d; }
+
+  /* FOOTER */
+  .footer { background: #0f172a; color: #94a3b8; padding: 48px 24px; }
+  .footer-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; }
+  .footer-brand img { height: 40px; width: 40px; border-radius: 10px; object-fit: contain; background: white; padding: 4px; margin-bottom: 12px; }
+  .footer-brand p { font-size: 13px; line-height: 1.7; }
+  .footer h4 { color: white; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+  .footer ul { list-style: none; }
+  .footer ul li { margin-bottom: 8px; }
+  .footer ul a { font-size: 13px; color: #94a3b8; transition: color 0.2s; }
+  .footer ul a:hover { color: #16a34a; }
+  .footer-bottom { max-width: 1100px; margin: 0 auto; padding-top: 24px; margin-top: 32px; border-top: 1px solid #1e293b; display: flex; justify-content: space-between; align-items: center; font-size: 12px; flex-wrap: wrap; gap: 12px; }
+  .footer-bottom a { color: #16a34a; }
+
+  @media (max-width: 768px) {
+    .hero h1 { font-size: 32px; }
+    .features-grid, .pricing-grid { grid-template-columns: 1fr; }
+    .gihm-features { grid-template-columns: 1fr; }
+    .gihm-body { padding: 24px; }
+    .gihm-header { padding: 32px 24px; }
+    .footer-inner { grid-template-columns: 1fr; }
+    .nav-links { display: none; }
+    .hero-stats { gap: 20px; }
+    .price-card.popular { transform: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAVIGATION -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="#" class="nav-brand">
+      <img src="../shacomputec-logo.png" alt="ShaComputeC">
+      <span>ShaComputeC</span>
+    </a>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#gihm-his">GIHM-HIS</a>
+      <a href="#pricing">Pricing</a>
+      <a href="mailto:shacomputecgh@gmail.com">Contact</a>
+      <a href="https://shacomputecghapp.unaux.com/login" class="nav-cta">Try Free →</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge">🏥 Built for Ghana's Healthcare</div>
+    <h1>Ghana's Complete<br><span>Hospital Management</span> System</h1>
+    <p>Over 300 integrated modules for pharmacy, laboratory, billing, theatre, maternity, emergency, and more — built for government, private, and mission hospitals.</p>
+    <div class="hero-buttons">
+      <a href="https://shacomputecghapp.unaux.com/login" class="btn btn-green">Start Free Trial →</a>
+      <a href="https://shacomputecghapp.unaux.com/" class="btn btn-outline">Explore GIHM-HIS →</a>
+      <a href="#pricing" class="btn btn-outline">View Pricing</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat"><strong>300+</strong><span>Modules</span></div>
+      <div class="hero-stat"><strong>16</strong><span>Regions</span></div>
+      <div class="hero-stat"><strong>261</strong><span>Districts</span></div>
+      <div class="hero-stat"><strong>24/7</strong><span>Support</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA: Ready to Get Started? -->
+<section class="cta-section">
+  <h2>Ready to Get Started?</h2>
+  <p>Try the free demo or buy your license now</p>
+  <div class="cta-buttons">
+    <a href="https://shacomputecghapp.unaux.com/login" class="btn btn-green">Free Demo</a>
+    <a href="https://wa.me/233530941750?text=Hi%20ShaComputeC%2C%20I%20want%20to%20buy%20GIHM-HIS" class="btn btn-red">WhatsApp Me</a>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     EXPLORE GIHM-HIS SECTION (BELOW Ready to Get Started)
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="section" id="gihm-his">
+  <div class="gihm-section">
+    <div class="gihm-header">
+      <img src="../shacomputec-logo.png" alt="GIHM-HIS" class="gihm-logo">
+      <div class="gihm-badge">FREE 30-DAY TRIAL</div>
+      <h2>Explore GIHM-HIS</h2>
+      <p>Ghana's complete hospital management system with 300+ modules — pharmacy, laboratory, billing, theatre, maternity, emergency, ID cards, AI assistant, and more. Try it free for 30 days.</p>
+    </div>
+    <div class="gihm-body">
+      <div class="gihm-features">
+        <div class="gihm-feat"><span class="ck">✓</span> 300+ integrated modules</div>
+        <div class="gihm-feat"><span class="ck">✓</span> Multi-language support</div>
+        <div class="gihm-feat"><span class="ck">✓</span> PDF export & ID cards</div>
+        <div class="gihm-feat"><span class="ck">✓</span> WhatsApp & SMS integration</div>
+        <div class="gihm-feat"><span class="ck">✓</span> ShaComputeC AI assistant</div>
+        <div class="gihm-feat"><span class="ck">✓</span> Offline-first design</div>
+        <div class="gihm-feat"><span class="ck">✓</span> Paystack online payments</div>
+        <div class="gihm-feat"><span class="ck">✓</span> 24/7 technical support</div>
+      </div>
+      <div class="gihm-modules">
+        <h4>Key Modules</h4>
+        <div class="gihm-tags">
+          <span>Pharmacy</span><span>Laboratory</span><span>Billing</span><span>Theatre</span>
+          <span>Maternity</span><span>Emergency</span><span>ICU/NICU</span><span>Blood Bank</span>
+          <span>Radiology</span><span>Telemedicine</span><span>Insurance/NHIS</span><span>ID Card Builder</span>
+          <span>AI Assistant</span><span>Ward Management</span><span>Clinical Notes</span><span>Drug Database</span>
+          <span>Surveillance</span><span>Reports & Analytics</span>
+        </div>
+      </div>
+      <div class="gihm-buttons">
+        <a href="https://shacomputecghapp.unaux.com/login" class="btn btn-green">Start Free Trial →</a>
+        <a href="https://shacomputecghapp.unaux.com/" class="btn btn-outline" style="color:#334155; border-color:#e2e8f0;">Visit Full Website</a>
+      </div>
+      <div class="gihm-dev">
+        <img src="../shacomputec-logo.png" alt="ShaComputeC">
+        <div class="gihm-dev-info">
+          <h4>Built by ShaComputeC</h4>
+          <p>Hard Works Never Fail · Enterprise-grade hospital management</p>
+        </div>
+        <div class="gihm-dev-links">
+          <a href="mailto:shacomputecgh@gmail.com">shacomputecgh@gmail.com</a>
+          <a href="tel:+233530941750">+233 530 941 750</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="section" id="pricing">
+  <div class="section-title">
+    <h2>Simple, Transparent Pricing</h2>
+    <p>Choose the plan that fits your hospital</p>
+  </div>
+  <div class="pricing-grid">
+    <div class="price-card">
+      <h3>Starter</h3>
+      <p class="desc">For single clinics & health centres</p>
+      <div class="price-amount">GH₵ 2,500<span>/year</span></div>
+      <ul class="price-list">
+        <li>Up to 5 staff accounts</li>
+        <li>OPD & Pharmacy modules</li>
+        <li>Basic billing</li>
+        <li>Email support</li>
+        <li>Monthly updates</li>
+      </ul>
+      <a href="https://shacomputecghapp.unaux.com/login" class="price-btn">Start Free Trial</a>
+    </div>
+    <div class="price-card popular">
+      <div class="price-pop">MOST POPULAR</div>
+      <h3>Professional</h3>
+      <p class="desc">For district & private hospitals</p>
+      <div class="price-amount">GH₵ 5,000<span>/year</span></div>
+      <ul class="price-list">
+        <li>Up to 50 staff accounts</li>
+        <li>All clinical modules</li>
+        <li>Laboratory & Imaging</li>
+        <li>Insurance billing</li>
+        <li>WhatsApp & SMS</li>
+        <li>Priority support</li>
+      </ul>
+      <a href="https://shacomputecghapp.unaux.com/login" class="price-btn">Start Free Trial</a>
+    </div>
+    <div class="price-card">
+      <h3>Enterprise</h3>
+      <p class="desc">For teaching & regional hospitals</p>
+      <div class="price-amount">GH₵ 10,000<span>/year</span></div>
+      <ul class="price-list">
+        <li>Unlimited staff accounts</li>
+        <li>All 300+ modules</li>
+        <li>Multi-branch support</li>
+        <li>Custom integrations</li>
+        <li>Dedicated support</li>
+        <li>On-site training</li>
+        <li>API access</li>
+      </ul>
+      <a href="mailto:shacomputecgh@gmail.com" class="price-btn">Contact Sales</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <img src="../shacomputec-logo.png" alt="ShaComputeC">
+      <p>ShaComputeC builds enterprise-grade hospital management systems for healthcare facilities across Ghana and West Africa.</p>
+      <p style="margin-top:12px"><a href="mailto:shacomputecgh@gmail.com" style="color:#16a34a">shacomputecgh@gmail.com</a></p>
+      <p><a href="tel:+233530941750" style="color:#16a34a">+233 530 941 750</a></p>
+    </div>
+    <div>
+      <h4>Product</h4>
+      <ul>
+        <li><a href="https://shacomputecghapp.unaux.com/">GIHM-HIS Website</a></li>
+        <li><a href="https://shacomputecghapp.unaux.com/login">Start Free Trial</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#features">Features</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Modules</h4>
+      <ul>
+        <li><a href="https://shacomputecghapp.unaux.com/app/pharmacy">Pharmacy</a></li>
+        <li><a href="https://shacomputecghapp.unaux.com/app/lab">Laboratory</a></li>
+        <li><a href="https://shacomputecghapp.unaux.com/app/billing">Billing</a></li>
+        <li><a href="https://shacomputecghapp.unaux.com/app/theatre">Theatre</a></li>
+        <li><a href="https://shacomputecghapp.unaux.com/app/maternity">Maternity</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Contact</h4>
+      <ul>
+        <li><a href="mailto:shacomputecgh@gmail.com">Email Us</a></li>
+        <li><a href="tel:+233530941750">Call Us</a></li>
+        <li><a href="https://shacomputecghapp.unaux.com/">Visit Website</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 ShaComputeC. All rights reserved. Hard Works Never Fail.</span>
+    <span>Built with ❤️ for Ghana's Healthcare</span>
+  </div>
+</footer>
+
+</body>
+</html>

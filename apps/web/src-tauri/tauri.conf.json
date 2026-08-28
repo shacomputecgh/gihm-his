@@ -1,0 +1,54 @@
+{
+  "$schema": "../../../node_modules/@tauri-apps/cli/config.schema.json",
+  "productName": "GIHM-HIS",
+  "version": "1.0.0",
+  "identifier": "com.shacomputec.gihm-his",
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:5173",
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npx vite build"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "GIHM-HIS - Ghana Integrated Health Management System",
+        "width": 1280,
+        "height": 800,
+        "minWidth": 1024,
+        "minHeight": 700,
+        "resizable": true,
+        "fullscreen": false,
+        "center": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis", "msi"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "resources": [
+      "resources/**/*"
+    ],
+    "category": "Medical",
+    "shortDescription": "Ghana's Complete Hospital Management System — Developed by ShaComputeC",
+    "longDescription": "GIHM-HIS — Ghana Integrated Health Management & Hospital Information System. Developed by ShaComputeC (shacomputec@gmail.com | +233 530 941 750). Over 400 integrated modules for pharmacy, laboratory, billing, theatre, maternity, emergency, ID cards, AI assistant, and more. Built for government, private, mission and teaching hospitals across Ghana's 16 regions and 261 districts. Includes full API server, SQLite database, and seed data. Works offline.",
+    "copyright": "© 2026 ShaComputeC — Hard Works Never Fail — shacomputec@gmail.com",
+    "windows": {
+      "nsis": {
+        "installMode": "both",
+        "displayLanguageSelector": true
+      },
+      "wix": null
+    }
+  }
+}

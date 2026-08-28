@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shacomputec — GES School MIS Developer</title>
+    <meta name="description" content="Shacomputec — GES Qualified Professional Licensed Teacher & Software Developer. Buy GES School MIS license online.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Inter',sans-serif;background:#0a0a0f;color:#e2e8f0;overflow-x:hidden}
+        body::before{content:'';position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:700px;height:700px;background:url('images/logo-login.jpg') center/contain no-repeat;opacity:0.06;pointer-events:none;z-index:0}
+        body::after{content:'';position:fixed;top:15%;right:10%;width:400px;height:400px;background:url('images/logo-black.jpg') center/contain no-repeat;opacity:0.03;pointer-events:none;z-index:0}
+        
+        .hdr{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px 30px;display:flex;align-items:center;justify-content:space-between;background:rgba(10,10,15,0.85);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.05)}
+        .hdr .brand{display:flex;align-items:center;gap:12px}
+        .hdr .brand-icon{width:40px;height:40px;border-radius:10px;overflow:hidden;flex-shrink:0}
+        .hdr .brand-icon img{width:100%;height:100%;object-fit:cover}
+        .hdr .brand-name{font-weight:700;color:#f8fafc;font-size:1.05em}
+        .hdr nav{display:flex;gap:6px;align-items:center}
+        .hdr nav a{color:#94a3b8;text-decoration:none;padding:7px 14px;border-radius:8px;font-size:0.82em;font-weight:500;transition:all 0.3s}
+        .hdr nav a:hover{color:#f8fafc;background:rgba(124,58,237,0.1)}
+        .hdr nav a.cta{background:linear-gradient(135deg,#7c3aed,#a78bfa);color:white;padding:7px 18px}
+        
+        .hero{position:relative;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:100px 30px 60px;overflow:hidden;z-index:1}
+        .hero::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:600px;height:600px;background:url('images/logo-login.jpg') center/contain no-repeat;opacity:0.08;pointer-events:none;animation:logoFloat 10s ease-in-out infinite}
+        @keyframes logoFloat{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.05)}}
+        .hero::after{content:'';position:absolute;bottom:-200px;right:-150px;width:500px;height:500px;background:url('images/logo-black.jpg') center/contain no-repeat;opacity:0.04;pointer-events:none}
+        .hero-inner{position:relative;z-index:2;text-align:center;max-width:900px}
+        .hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(124,58,237,0.1);border:1px solid rgba(124,58,237,0.25);padding:8px 20px;border-radius:30px;color:#a78bfa;font-size:0.85em;font-weight:500;margin-bottom:30px;animation:fadeInUp .8s ease}
+        .hero-badge .dot{width:8px;height:8px;background:#22c55e;border-radius:50%;animation:pulse 2s infinite}
+        @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.5)}}
+        @keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+        .hero-photo{width:150px;height:150px;border-radius:50%;object-fit:cover;border:4px solid rgba(124,58,237,0.4);box-shadow:0 0 60px rgba(124,58,237,0.2);margin-bottom:25px;animation:fadeInUp .8s ease}
+        .hero h1{font-size:3.5em;font-weight:900;line-height:1.1;margin-bottom:12px;animation:fadeInUp .8s ease .1s both}
+        .hero h1 .grad{background:linear-gradient(135deg,#7c3aed,#a78bfa,#c4b5fd);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .hero .role{font-size:1.2em;color:#a78bfa;font-weight:500;margin-bottom:15px;animation:fadeInUp .8s ease .2s both}
+        .hero .bio{font-size:1.05em;color:#94a3b8;max-width:600px;margin:0 auto 30px;line-height:1.7;animation:fadeInUp .8s ease .3s both}
+        .hero-tags{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;margin-bottom:35px;animation:fadeInUp .8s ease .4s both}
+        .hero-tags span{background:rgba(124,58,237,0.08);border:1px solid rgba(124,58,237,0.2);padding:6px 16px;border-radius:20px;font-size:0.8em;color:#c4b5fd}
+        .hero-tags i{margin-right:5px;color:#a78bfa}
+        .hero-cta{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;animation:fadeInUp .8s ease .5s both}
+        .btn{padding:13px 28px;border-radius:11px;text-decoration:none;font-weight:600;font-size:0.95em;transition:all 0.3s;display:inline-flex;align-items:center;gap:8px;border:none;cursor:pointer}
+        .btn-p{background:linear-gradient(135deg,#7c3aed,#a78bfa);color:white;box-shadow:0 4px 20px rgba(124,58,237,0.3)}
+        .btn-p:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(124,58,237,0.5)}
+        .btn-g{background:#25d366;color:white;box-shadow:0 4px 20px rgba(37,211,102,0.3)}
+        .btn-g:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(37,211,102,0.5)}
+        .btn-o{background:rgba(255,255,255,0.05);color:#e2e8f0;border:1px solid rgba(255,255,255,0.1)}
+        .btn-o:hover{background:rgba(255,255,255,0.1);transform:translateY(-2px)}
+        .scroll-hint{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);color:#475569;font-size:0.8em;animation:bounce 2s infinite;z-index:2}
+        @keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(8px)}}
+        
+        .cnt{max-width:1100px;margin:0 auto;padding:0 20px;position:relative;z-index:1}
+        .sec{text-align:center;margin:70px 0 35px}.sec h2{font-size:2em;color:#f8fafc;margin-bottom:8px}.sec p{color:#64748b;font-size:1.05em}.sec .line{width:50px;height:3px;background:linear-gradient(90deg,#7c3aed,#a78bfa);border-radius:2px;margin:12px auto 0}
+        
+        .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:40px 0}
+        .st{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:24px;text-align:center;transition:all 0.3s;position:relative;overflow:hidden}
+        .st::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+        .st:nth-child(1)::before{background:linear-gradient(90deg,#7c3aed,#a78bfa)}.st:nth-child(2)::before{background:linear-gradient(90deg,#a78bfa,#c4b5fd)}.st:nth-child(3)::before{background:linear-gradient(90deg,#22c55e,#4ade80)}.st:nth-child(4)::before{background:linear-gradient(90deg,#f59e0b,#fbbf24)}
+        .st:hover{transform:translateY(-4px);border-color:rgba(124,58,237,0.2)}
+        .st .n{font-size:2em;font-weight:900;background:linear-gradient(135deg,#a78bfa,#c4b5fd);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .st:nth-child(3) .n{background:linear-gradient(135deg,#22c55e,#86efac);-webkit-background-clip:text;background-clip:text}
+        .st:nth-child(4) .n{background:linear-gradient(135deg,#f59e0b,#fde68a);-webkit-background-clip:text;background-clip:text}
+        .st .l{color:#64748b;margin-top:4px;font-size:0.88em}
+        
+        .creds{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:30px 0}
+        .cr{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:22px 14px;text-align:center;transition:all 0.3s;border-top:3px solid #7c3aed}
+        .cr:nth-child(2){border-top-color:#a78bfa}.cr:nth-child(3){border-top-color:#22c55e}.cr:nth-child(4){border-top-color:#f59e0b}
+        .cr:hover{transform:translateY(-3px)}.cr i{font-size:1.6em;margin-bottom:8px;display:block}
+        .cr:nth-child(1) i{color:#a78bfa}.cr:nth-child(2) i{color:#c4b5fd}.cr:nth-child(3) i{color:#4ade80}.cr:nth-child(4) i{color:#fbbf24}
+        .cr h4{font-size:0.88em;color:#e2e8f0}
+        
+        /* PRICING */
+        .prices{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:30px 0}
+        .pr{border-radius:16px;padding:28px 18px;text-align:center;color:white;position:relative;overflow:hidden;transition:all 0.3s;display:flex;flex-direction:column;align-items:center}
+        .pr:hover{transform:translateY(-6px);box-shadow:0 12px 35px rgba(0,0,0,0.4)}
+        .pr.p1{background:linear-gradient(135deg,#6366f1,#818cf8)}.pr.p2{background:linear-gradient(135deg,#8b5cf6,#a78bfa)}
+        .pr.p3{background:linear-gradient(135deg,#22c55e,#10b981);border:2px solid rgba(255,255,255,0.3)}.pr.p4{background:linear-gradient(135deg,#f59e0b,#f97316)}
+        .pr .tag{position:absolute;top:10px;right:10px;background:rgba(255,255,255,0.2);padding:3px 10px;border-radius:16px;font-size:0.68em;font-weight:600}
+        .pr h3{font-size:0.95em;margin-bottom:4px}.pr .amt{font-size:2.2em;font-weight:900;margin:6px 0}.pr .cur{font-size:0.5em;opacity:.9}
+        .pr .desc{opacity:.85;line-height:1.5;font-size:0.85em}.pr .sch{font-weight:700;margin-top:4px;margin-bottom:14px}
+        .pr .buy-btn{background:rgba(255,255,255,0.2);color:white;border:2px solid rgba(255,255,255,0.4);padding:10px 24px;border-radius:10px;font-weight:700;font-size:0.9em;cursor:pointer;transition:all 0.3s;width:100%;font-family:'Inter',sans-serif}
+        .pr .buy-btn:hover{background:white;color:#1a1a2e;border-color:white;transform:scale(1.02)}
+        .pr.p3 .buy-btn{background:rgba(255,255,255,0.3);border-color:rgba(255,255,255,0.5)}
+        .contact-box{background:rgba(249,115,22,0.08);border:1px solid rgba(249,115,22,0.25);border-radius:12px;padding:14px;text-align:center;margin:18px 0}.contact-box p{color:#fb923c;font-weight:600;margin:0;font-size:0.95em}
+        
+        /* MODAL */
+        .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);z-index:200;display:none;align-items:center;justify-content:center}
+        .modal-overlay.show{display:flex}
+        .modal{background:#1e293b;border:1px solid #334155;border-radius:18px;padding:35px;max-width:440px;width:90%;position:relative;animation:modalIn 0.3s ease}
+        @keyframes modalIn{from{opacity:0;transform:scale(0.9) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+        .modal-close{position:absolute;top:15px;right:15px;background:none;border:none;color:#94a3b8;font-size:1.3em;cursor:pointer;transition:color 0.3s}.modal-close:hover{color:#f8fafc}
+        .modal h3{font-size:1.3em;color:#f8fafc;margin-bottom:5px}.modal .plan-name{color:#a78bfa;font-size:0.9em;margin-bottom:20px}
+        .modal .form-group{margin-bottom:15px}.modal label{display:block;color:#94a3b8;font-size:0.85em;margin-bottom:6px;font-weight:500}
+        .modal input,.modal select{width:100%;padding:12px 14px;background:#0f172a;border:1px solid #334155;border-radius:10px;color:#f8fafc;font-size:0.95em;font-family:'Inter',sans-serif;transition:border-color 0.3s}
+        .modal input:focus,.modal select:focus{outline:none;border-color:#7c3aed}
+        .modal .pay-btn{width:100%;padding:14px;background:linear-gradient(135deg,#22c55e,#10b981);color:white;border:none;border-radius:10px;font-size:1em;font-weight:700;cursor:pointer;transition:all 0.3s;font-family:'Inter',sans-serif;margin-top:5px}
+        .modal .pay-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(34,197,94,0.4)}
+        .modal .pay-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+        .modal .pay-btn i{margin-right:6px}.modal .secure{display:flex;align-items:center;justify-content:center;gap:6px;color:#64748b;font-size:0.8em;margin-top:12px}
+        .modal .amount-display{text-align:center;font-size:1.8em;font-weight:900;color:#22c55e;margin:10px 0}
+        .modal .spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.6s linear infinite;margin-right:8px;vertical-align:middle}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .modal .error-msg{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:10px;color:#f87171;font-size:0.85em;margin-top:10px;display:none}
+        
+        /* SUCCESS */
+        .success-box{text-align:center;padding:20px 0}
+        .success-box .check{width:70px;height:70px;background:rgba(34,197,94,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 15px;font-size:2em;color:#22c55e;animation:scaleIn 0.5s ease}
+        @keyframes scaleIn{from{transform:scale(0)}to{transform:scale(1)}}
+        .success-box h3{color:#f8fafc;margin-bottom:8px}.success-box p{color:#94a3b8;font-size:0.9em;line-height:1.6}
+        .success-box .ref{background:#0f172a;padding:8px 16px;border-radius:8px;color:#a78bfa;font-weight:600;font-size:0.85em;display:inline-block;margin:10px 0}
+        .success-box .key-display{background:#0f172a;border:2px solid #22c55e;border-radius:10px;padding:15px;margin:15px 0;text-align:left}
+        .success-box .key-display .label{color:#64748b;font-size:0.8em;margin-bottom:4px}.success-box .key-display .key{color:#22c55e;font-weight:700;font-family:monospace;font-size:0.95em;word-break:break-all}
+        
+        .feats{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin:30px 0}
+        .ft{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:11px;padding:16px;display:flex;align-items:center;gap:11px;transition:all 0.3s}
+        .ft:hover{border-color:rgba(124,58,237,0.25);transform:translateY(-2px)}
+        .ft i{font-size:1.2em;min-width:26px;text-align:center}
+        .ft span{font-weight:500;font-size:0.85em;color:#e2e8f0}
+        .ft:nth-child(1) i{color:#a78bfa}.ft:nth-child(2) i{color:#c4b5fd}.ft:nth-child(3) i{color:#4ade80}
+        .ft:nth-child(4) i{color:#60a5fa}.ft:nth-child(5) i{color:#f472b6}.ft:nth-child(6) i{color:#fb923c}
+        .ft:nth-child(7) i{color:#f87171}.ft:nth-child(8) i{color:#22d3ee}.ft:nth-child(9) i{color:#facc15}.ft:nth-child(10) i{color:#34d399}
+        
+        .cta-box{background:linear-gradient(135deg,rgba(124,58,237,0.12),rgba(167,139,250,0.06));border:1px solid rgba(124,58,237,0.2);border-radius:20px;padding:50px;text-align:center;margin:50px 0;position:relative;overflow:hidden}
+        .cta-box::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:300px;height:300px;background:url('images/logo-login.jpg') center/contain no-repeat;opacity:0.06;pointer-events:none}
+        .cta-box h2{font-size:2em;color:#f8fafc;margin-bottom:10px;position:relative;z-index:1}
+        .cta-box p{color:#94a3b8;margin-bottom:25px;font-size:1.05em;position:relative;z-index:1}
+        
+        footer{text-align:center;padding:30px;color:#334155;font-size:0.8em;border-top:1px solid rgba(255,255,255,0.05);position:relative;z-index:1}footer a{color:#7c3aed;text-decoration:none}
+        .wa{position:fixed;bottom:22px;right:22px;z-index:1000}
+        .wa a{display:flex;align-items:center;justify-content:center;width:55px;height:55px;background:#25d366;border-radius:50%;color:white;font-size:1.6em;text-decoration:none;box-shadow:0 4px 20px rgba(37,211,102,0.4);animation:waP 2s infinite;transition:transform 0.3s}
+        .wa a:hover{transform:scale(1.1)}
+        @keyframes waP{0%,100%{box-shadow:0 4px 20px rgba(37,211,102,0.4)}50%{box-shadow:0 4px 30px rgba(37,211,102,0.6)}}
+        
+        @media(max-width:900px){.prices{grid-template-columns:repeat(2,1fr)}.creds{grid-template-columns:repeat(2,1fr)}}
+        @media(max-width:768px){.hero h1{font-size:2.2em}.hero-photo{width:120px;height:120px}.stats{grid-template-columns:repeat(2,1fr)}.hdr nav a:not(.cta){display:none}body::before{width:500px;height:500px;opacity:0.04}}
+        @media(max-width:480px){.stats,.creds,.prices{grid-template-columns:1fr}.hero h1{font-size:1.8em}body::before{width:400px;height:400px;opacity:0.03}}
+    </style>
+</head>
+<body>
+
+<header class="hdr">
+    <div class="brand"><div class="brand-icon"><img src="images/logo-login.jpg" alt="Logo"></div><span class="brand-name">Shacomputec</span></div>
+    <nav><a href="#home">Home</a><a href="#pricing">School Pricing</a><a href="#hospital">Hospital HIS</a><a href="#hospital-pricing">Hospital Pricing</a><a href="#contact">Contact</a><a href="https://deploy-vercel-flax-nine.vercel.app/login" class="cta"><i class="fas fa-rocket"></i> Try Demo</a></nav>
+</header>
+
+<section class="hero" id="home">
+    <div class="hero-inner">
+        <img src="images/photo1.jpg" alt="Shacomputec" class="hero-photo">
+        <div class="hero-badge"><span class="dot"></span> Available for new projects</div>
+        <h1><span class="grad">Shacomputec</span></h1>
+        <p class="role">GES Qualified Professional Licensed Teacher & Software Developer</p>
+        <p class="bio">Building powerful, offline-first school management systems for Ghana Education Service. From desktop to mobile to web — everything a school needs, in one platform.</p>
+        <div class="hero-tags">
+            <span><i class="fas fa-code"></i> Software Developer</span>
+            <span><i class="fas fa-chalkboard-teacher"></i> GES Licensed Teacher</span>
+            <span><i class="fas fa-server"></i> System Architect</span>
+            <span><i class="fas fa-graduation-cap"></i> EdTech Specialist</span>
+        </div>
+        <div class="hero-cta">
+            <a href="https://deploy-vercel-flax-nine.vercel.app/login" class="btn btn-p"><i class="fas fa-play-circle"></i> Try Free Demo</a>
+            <a href="https://wa.me/233530941750?text=Hello%2C%20I%27m%20interested%20in%20GES%20School%20MIS" class="btn btn-g"><i class="fab fa-whatsapp"></i> WhatsApp Me</a>
+            <a href="#pricing" class="btn btn-o"><i class="fas fa-tag"></i> Buy License</a>
+        </div>
+    </div>
+    <div class="scroll-hint"><i class="fas fa-chevron-down"></i> Scroll down</div>
+</section>
+
+<div class="cnt">
+    <div class="stats">
+        <div class="st"><div class="n">210+</div><div class="l">Modules Built</div></div>
+        <div class="st"><div class="n">6</div><div class="l">Languages</div></div>
+        <div class="st"><div class="n">3</div><div class="l">Platforms</div></div>
+        <div class="st"><div class="n">100%</div><div class="l">Offline Ready</div></div>
+    </div>
+    <div class="sec"><h2>🎓 Credentials</h2><div class="line"></div></div>
+    <div class="creds">
+        <div class="cr"><i class="fas fa-chalkboard-teacher"></i><h4>GES Qualified & Licensed Teacher</h4></div>
+        <div class="cr"><i class="fas fa-code"></i><h4>Professional Software Developer</h4></div>
+        <div class="cr"><i class="fas fa-server"></i><h4>Full-Stack System Architect</h4></div>
+        <div class="cr"><i class="fas fa-graduation-cap"></i><h4>Education Technology Specialist</h4></div>
+    </div>
+    
+    <div class="sec" id="pricing"><h2>💰 Pricing Plans</h2><p>Buy your license online — key delivered automatically via email & WhatsApp</p><div class="line"></div></div>
+    <div class="prices">
+        <div class="pr p1">
+            <div class="tag">Starter</div><h3>1 Month</h3>
+            <div class="amt"><span class="cur">GH₵</span>300</div>
+            <div class="desc">Host 1 School</div><div class="sch">PRY / JHS</div>
+            <button class="buy-btn" onclick="openPay('1m','1 Month Starter',300,'PRY / JHS')"><i class="fas fa-shopping-cart"></i> Buy Now</button>
+        </div>
+        <div class="pr p2">
+            <div class="tag">Best Value</div><h3>12 Months</h3>
+            <div class="amt"><span class="cur">GH₵</span>2,500</div>
+            <div class="desc">Host 2 Schools</div><div class="sch">PRY and JHS</div>
+            <button class="buy-btn" onclick="openPay('12m','12 Months Best Value',2500,'PRY and JHS')"><i class="fas fa-shopping-cart"></i> Buy Now</button>
+        </div>
+        <div class="pr p3">
+            <div class="tag">⭐ Most Popular</div><h3>12 Months</h3>
+            <div class="amt"><span class="cur">GH₵</span>2,800</div>
+            <div class="desc">Host 2 Schools</div><div class="sch">PRY, JHS and SHS</div>
+            <button class="buy-btn" onclick="openPay('12m','12 Months Most Popular',2800,'PRY, JHS and SHS')"><i class="fas fa-shopping-cart"></i> Buy Now</button>
+        </div>
+        <div class="pr p4">
+            <div class="tag">Premium</div><h3>24 Months</h3>
+            <div class="amt"><span class="cur">GH₵</span>4,000</div>
+            <div class="desc">Host 3 Schools</div><div class="sch">PRY, JHS and SHS</div>
+            <button class="buy-btn" onclick="openPay('24m','24 Months Premium',4000,'PRY, JHS and SHS')"><i class="fas fa-shopping-cart"></i> Buy Now</button>
+        </div>
+    </div>
+    <div class="contact-box"><p>📞 More than 3 schools? Contact the developer for a custom package.</p></div>
+    
+    <div class="sec"><h2>✨ System Features</h2><div class="line"></div></div>
+    <div class="feats">
+        <div class="ft"><i class="fas fa-mobile-alt"></i><span>Multi-Platform</span></div>
+        <div class="ft"><i class="fas fa-globe"></i><span>6 Languages</span></div>
+        <div class="ft"><i class="fas fa-wifi"></i><span>100% Offline</span></div>
+        <div class="ft"><i class="fas fa-credit-card"></i><span>MoMo, Paystack & Telecel</span></div>
+        <div class="ft"><i class="fas fa-book"></i><span>Library Module</span></div>
+        <div class="ft"><i class="fas fa-home"></i><span>Hostel Management</span></div>
+        <div class="ft"><i class="fas fa-chart-bar"></i><span>GES/NaCCA Reports</span></div>
+        <div class="ft"><i class="fas fa-users"></i><span>210+ Modules</span></div>
+        <div class="ft"><i class="fas fa-sync-alt"></i><span>Cloud-Offline Sync</span></div>
+        <div class="ft"><i class="fas fa-lock"></i><span>Encrypted & Secure</span></div>
+    </div>
+    <!-- ═══════ FREE TRIAL DEMO ═══════ -->
+    <div style="background:linear-gradient(135deg,rgba(34,197,94,0.1),rgba(16,185,129,0.05));border:1px solid rgba(34,197,94,0.2);border-radius:20px;padding:50px 30px;text-align:center;margin:50px 0;position:relative;overflow:hidden">
+        <div style="position:absolute;top:-50%;right:-20%;width:300px;height:300px;background:rgba(34,197,94,0.06);border-radius:50%;pointer-events:none"></div>
+        <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.3);padding:6px 16px;border-radius:20px;color:#22c55e;font-size:0.8em;font-weight:600;margin-bottom:20px;position:relative">
+            <span style="width:8px;height:8px;background:#22c55e;border-radius:50%;animation:pulse 2s infinite"></span>
+            FREE TRIAL AVAILABLE
+        </div>
+        <h2 style="font-size:2em;color:#f8fafc;margin-bottom:10px;position:relative">🎓 Try GES School MIS Free</h2>
+        <p style="color:#94a3b8;margin-bottom:28px;font-size:1.05em;max-width:600px;margin-left:auto;margin-right:auto;position:relative">Explore the full system with a free trial — no credit card required. See how the dashboard, students, fees, results and every module works. The demo runs on a live server with sample data.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:10px 24px;justify-content:center;margin-bottom:32px;position:relative">
+            <span style="color:#94a3b8;font-size:0.9em"><i style="color:#22c55e;margin-right:5px"></i> 210+ modules</span>
+            <span style="color:#94a3b8;font-size:0.9em"><i style="color:#22c55e;margin-right:5px"></i> 3 apps (Web + Desktop + Android)</span>
+            <span style="color:#94a3b8;font-size:0.9em"><i style="color:#22c55e;margin-right:5px"></i> NaCCA aligned</span>
+            <span style="color:#94a3b8;font-size:0.9em"><i style="color:#22c55e;margin-right:5px"></i> Online payments</span>
+            <span style="color:#94a3b8;font-size:0.9em"><i style="color:#22c55e;margin-right:5px"></i> Email, WhatsApp & SMS</span>
+            <span style="color:#94a3b8;font-size:0.9em"><i style="color:#22c55e;margin-right:5px"></i> Result checker</span>
+        </div>
+        <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;position:relative;z-index:1">
+            <a href="https://deploy-vercel-flax-nine.vercel.app/login" class="btn btn-p"><i class="fas fa-play-circle"></i> Launch Free Demo</a>
+            <a href="https://deploy-vercel-flax-nine.vercel.app/buy" class="btn btn-o"><i class="fas fa-tag"></i> View Plans & Pricing</a>
+            <a href="https://wa.me/233530941750?text=Hi%20Shacomputec%2C%20I%20want%20to%20try%20GES%20School%20MIS" class="btn btn-g"><i class="fab fa-whatsapp"></i> WhatsApp Me</a>
+        </div>
+    </div>
+
+    <!-- ═══════ GIHM-HIS HOSPITAL MANAGEMENT ═══════ -->
+    <div style="margin:60px 0">
+        <div class="sec" id="hospital"><h2>🏥 GIHM-HIS — Hospital Management</h2><p>Ghana's complete hospital management system with 300+ modules</p><div class="line"></div></div>
+        <div style="background:linear-gradient(135deg,#0f172a 0%,#1e293b 50%,#0f4a2e 100%);border-radius:20px;padding:50px 30px;color:white;text-align:center;margin:30px 0;position:relative;overflow:hidden">
+            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:400px;height:400px;background:url('shacomputec-logo.png') center/contain no-repeat;opacity:0.04;pointer-events:none"></div>
+            <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(74,222,128,0.15);border:1px solid rgba(74,222,128,0.3);padding:6px 16px;border-radius:20px;color:#4ade80;font-size:0.8em;font-weight:600;margin-bottom:20px;position:relative">
+                <span style="width:8px;height:8px;background:#4ade80;border-radius:50%;animation:pulse 2s infinite"></span>
+                FREE 30-DAY TRIAL
+            </div>
+            <h2 style="font-size:2em;margin-bottom:10px;position:relative">🏥 Explore GIHM-HIS</h2>
+            <p style="color:rgba(255,255,255,0.75);margin-bottom:28px;font-size:1.05em;max-width:600px;margin-left:auto;margin-right:auto;position:relative">Ghana's complete hospital management system. Try it free for 30 days — no credit card required. 300+ modules covering every department.</p>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;max-width:700px;margin:0 auto 32px;position:relative">
+                <div style="display:flex;align-items:center;gap:8px;color:rgba(255,255,255,0.85);font-size:0.9em"><span style="color:#4ade80">✓</span> Pharmacy, Lab, Billing</div>
+                <div style="display:flex;align-items:center;gap:8px;color:rgba(255,255,255,0.85);font-size:0.9em"><span style="color:#4ade80">✓</span> Theatre, Maternity, Emergency</div>
+                <div style="display:flex;align-items:center;gap:8px;color:rgba(255,255,255,0.85);font-size:0.9em"><span style="color:#4ade80">✓</span> ID Card Builder & PDF Export</div>
+                <div style="display:flex;align-items:center;gap:8px;color:rgba(255,255,255,0.85);font-size:0.9em"><span style="color:#4ade80">✓</span> ShaComputeC AI Assistant</div>
+                <div style="display:flex;align-items:center;gap:8px;color:rgba(255,255,255,0.85);font-size:0.9em"><span style="color:#4ade80">✓</span> WhatsApp, SMS & Email</div>
+                <div style="display:flex;align-items:center;gap:8px;color:rgba(255,255,255,0.85);font-size:0.9em"><span style="color:#4ade80">✓</span> Multi-Language Support</div>
+                <div style="display:flex;align-items:center;gap:8px;color:rgba(255,255,255,0.85);font-size:0.9em"><span style="color:#4ade80">✓</span> Offline-First Design</div>
+                <div style="display:flex;align-items:center;gap:8px;color:rgba(255,255,255,0.85);font-size:0.9em"><span style="color:#4ade80">✓</span> Paystack Online Payments</div>
+            </div>
+            <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;position:relative;z-index:1">
+                <a href="https://shacomputecghapp.unaux.com/login" class="btn" style="background:#2563eb;color:white;box-shadow:0 4px 20px rgba(37,99,235,0.3)"><i class="fas fa-play-circle"></i> Start Free Trial</a>
+                <a href="https://shacomputecghapp.unaux.com/login" class="btn btn-o">Login / Activate</a>
+                <a href="https://wa.me/233530941750?text=Hi%20Shacomputec%2C%20I%20want%20to%20buy%20GIHM-HIS" class="btn" style="background:#dc2626;color:white"><i class="fab fa-whatsapp"></i> WhatsApp Me</a>
+            </div>
+        </div>
+        <!-- GIHM-HIS Pricing -->
+        <div class="sec" id="hospital-pricing"><h2>🏥 GIHM-HIS Hospital Pricing</h2><p>Per region. Each license covers one hospital in one region.</p><div class="line"></div></div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:30px 0">
+            <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:28px;text-align:center;color:white">
+                <h3 style="font-size:0.95em;margin-bottom:4px">Starter</h3>
+                <div style="font-size:2.2em;font-weight:900;margin:6px 0">GH₵ 2,500<span style="font-size:0.4em;opacity:0.8">/year</span></div>
+                <div style="color:#64748b;font-size:0.85em;margin-bottom:14px">1 Region · 1 Hospital</div>
+                <ul style="list-style:none;text-align:left;margin-bottom:18px"><li style="padding:4px 0;font-size:0.85em;color:#94a3b8">✓ 300+ modules</li><li style="padding:4px 0;font-size:0.85em;color:#94a3b8">✓ Pharmacy, Lab, Billing</li><li style="padding:4px 0;font-size:0.85em;color:#94a3b8">✓ Email support</li></ul>
+                <a href="https://wa.me/233530941750?text=Hi%20Shacomputec%2C%20I%20want%20GIHM-HIS%20Starter" class="btn btn-o" style="width:100%;justify-content:center">Buy Now</a>
+            </div>
+            <div style="background:linear-gradient(135deg,#2563eb,#1d4ed8);border-radius:16px;padding:28px;text-align:center;color:white;border:2px solid rgba(255,255,255,0.2)">
+                <div style="position:absolute;top:10px;right:10px;background:rgba(255,255,255,0.2);padding:3px 10px;border-radius:16px;font-size:0.68em;font-weight:600">⭐ RECOMMENDED</div>
+                <h3 style="font-size:0.95em;margin-bottom:4px">Professional</h3>
+                <div style="font-size:2.2em;font-weight:900;margin:6px 0">GH₵ 5,000<span style="font-size:0.4em;opacity:0.8">/year</span></div>
+                <div style="color:rgba(255,255,255,0.7);font-size:0.85em;margin-bottom:14px">1 Region · 1 Hospital</div>
+                <ul style="list-style:none;text-align:left;margin-bottom:18px"><li style="padding:4px 0;font-size:0.85em;color:rgba(255,255,255,0.85)">✓ All Starter features</li><li style="padding:4px 0;font-size:0.85em;color:rgba(255,255,255,0.85)">✓ WhatsApp, SMS & Email API</li><li style="padding:4px 0;font-size:0.85em;color:rgba(255,255,255,0.85)">✓ Paystack & ID Card Builder</li><li style="padding:4px 0;font-size:0.85em;color:rgba(255,255,255,0.85)">✓ Priority support</li></ul>
+                <a href="https://wa.me/233530941750?text=Hi%20Shacomputec%2C%20I%20want%20GIHM-HIS%20Professional" class="btn" style="background:rgba(255,255,255,0.2);color:white;border:2px solid rgba(255,255,255,0.4);width:100%;justify-content:center">Buy Now</a>
+            </div>
+            <div style="background:linear-gradient(135deg,#f59e0b,#f97316);border-radius:16px;padding:28px;text-align:center;color:white">
+                <h3 style="font-size:0.95em;margin-bottom:4px">Enterprise</h3>
+                <div style="font-size:2.2em;font-weight:900;margin:6px 0">GH₵ 10,000<span style="font-size:0.4em;opacity:0.8">/year</span></div>
+                <div style="color:rgba(255,255,255,0.8);font-size:0.85em;margin-bottom:14px">All Regions · Multi-Hospital</div>
+                <ul style="list-style:none;text-align:left;margin-bottom:18px"><li style="padding:4px 0;font-size:0.85em;color:rgba(255,255,255,0.85)">✓ All Professional features</li><li style="padding:4px 0;font-size:0.85em;color:rgba(255,255,255,0.85)">✓ Multi-hospital network</li><li style="padding:4px 0;font-size:0.85em;color:rgba(255,255,255,0.85)">✓ Custom branding & domain</li><li style="padding:4px 0;font-size:0.85em;color:rgba(255,255,255,0.85)">✓ On-site installation</li></ul>
+                <a href="https://wa.me/233530941750?text=Hi%20Shacomputec%2C%20I%20want%20GIHM-HIS%20Enterprise" class="btn btn-o" style="width:100%;justify-content:center">Buy Now</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="cta-box">
+        <h2>Ready to Get Started?</h2>
+        <p>Try the free demo or buy your license now</p>
+        <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;position:relative;z-index:1">
+            <a href="https://deploy-vercel-flax-nine.vercel.app/login" class="btn btn-p"><i class="fas fa-play-circle"></i> Free Demo</a>
+            <a href="https://wa.me/233530941750?text=Hello%2C%20I%27m%20interested%20in%20GES%20School%20MIS" class="btn btn-g"><i class="fab fa-whatsapp"></i> WhatsApp Me</a>
+        </div>
+    </div>
+</div>
+<footer><p>&copy; 2026 Shacomputec — Built with ❤️ for Ghana Education & Healthcare</p><p style="margin-top:6px"><strong style="color:#94a3b8">Developer:</strong> shacomputec · <a href="mailto:shacomputecgh@gmail.com">shacomputecgh@gmail.com</a> · <a href="tel:+233530941750">+233 530 941 750</a></p><p style="margin-top:8px"><a href="https://deploy-vercel-flax-nine.vercel.app">GES School MIS</a> | <a href="https://shacomputecghapp.unaux.com/login">GIHM-HIS Hospital Management</a> | <a href="#hospital">Hospital Pricing</a></p></footer>
+<div class="wa"><a href="https://wa.me/233530941750?text=Hello%20Shacomputec" title="Chat on WhatsApp"><i class="fab fa-whatsapp"></i></a></div>
+
+<!-- PAYMENT MODAL -->
+<div class="modal-overlay" id="payModal">
+    <div class="modal">
+        <button class="modal-close" onclick="closePay()">&times;</button>
+        <div id="payForm">
+            <h3>🎓 Buy GES School MIS License</h3>
+            <p class="plan-name" id="planName"></p>
+            <div class="amount-display" id="planAmount"></div>
+            <div class="form-group"><label>School Name</label><input type="text" id="schoolName" placeholder="e.g. Happy Academy" required></div>
+            <div class="form-group"><label>Email Address (for license delivery)</label><input type="email" id="payEmail" placeholder="you@example.com" required></div>
+            <div class="form-group"><label>Phone Number (WhatsApp)</label><input type="tel" id="payPhone" placeholder="024 000 0000" required></div>
+            <button class="pay-btn" id="payBtn" onclick="processPayment()"><i class="fas fa-lock"></i> Pay Now via Paystack</button>
+            <div class="error-msg" id="payError"></div>
+            <div class="secure"><i class="fas fa-shield-alt"></i> Secured by Paystack — 256-bit SSL</div>
+        </div>
+        <div id="paySuccess" style="display:none">
+            <div class="success-box">
+                <div class="check"><i class="fas fa-check"></i></div>
+                <h3>Payment Successful! 🎉</h3>
+                <p>Your license key has been generated and sent to your email & WhatsApp.</p>
+                <div class="ref" id="successRef"></div>
+                <div class="key-display" id="keyDisplay" style="display:none"><div class="label">Your License Key:</div><div class="key" id="licenseKey"></div></div>
+                <p style="margin-top:15px;font-size:0.85em;color:#94a3b8">Save this key. Go to your GES School MIS → Admin → Settings → License → Paste to activate.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const API_BASE = 'https://deploy-vercel-flax-nine.vercel.app';
+let currentPlan = {};
+
+function openPay(planKey, name, amount, level) {
+    currentPlan = { planKey, name, amount, level };
+    document.getElementById('planName').textContent = name + ' — ' + level;
+    document.getElementById('planAmount').textContent = 'GH₵ ' + amount.toLocaleString();
+    document.getElementById('payForm').style.display = 'block';
+    document.getElementById('paySuccess').style.display = 'none';
+    document.getElementById('payError').style.display = 'none';
+    document.getElementById('payModal').classList.add('show');
+}
+
+function closePay() { document.getElementById('payModal').classList.remove('show'); }
+
+async function processPayment() {
+    const school = document.getElementById('schoolName').value.trim();
+    const email = document.getElementById('payEmail').value.trim();
+    const phone = document.getElementById('payPhone').value.trim();
+    const btn = document.getElementById('payBtn');
+    const errDiv = document.getElementById('payError');
+    
+    if (!school) { showErr('Please enter your school name'); return; }
+    if (!email || !email.includes('@')) { showErr('Please enter a valid email'); return; }
+    if (!phone) { showErr('Please enter your phone number'); return; }
+    
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Processing...';
+    errDiv.style.display = 'none';
+    
+    try {
+        // Call the backend API — it creates the transaction + Paystack checkout
+        const res = await fetch(API_BASE + '/api/license/purchase', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                schoolName: school,
+                email: email,
+                phone: phone,
+                method: 'PAYSTACK',
+                plan: currentPlan.planKey,
+                tier: currentPlan.level.includes('SHS') ? 'shs' : 'basic'
+            })
+        });
+        
+        const data = await res.json();
+        
+        if (!res.ok || !data.ok) {
+            showErr(data.error || data.message || 'Payment failed. Please try again.');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-lock"></i> Pay Now via Paystack';
+            return;
+        }
+        
+        if (data.checkoutUrl) {
+            // Redirect to Paystack secure checkout
+            window.location.href = data.checkoutUrl;
+        } else {
+            showErr('No checkout URL received. Please try again.');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-lock"></i> Pay Now via Paystack';
+        }
+    } catch (e) {
+        showErr('Network error. Please check your connection and try again.');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-lock"></i> Pay Now via Paystack';
+    }
+}
+
+function showErr(msg) {
+    const errDiv = document.getElementById('payError');
+    errDiv.textContent = msg;
+    errDiv.style.display = 'block';
+}
+
+// Handle Paystack callback (when user returns from payment)
+window.addEventListener('load', function() {
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get('ref');
+    if (ref) {
+        // User returned from Paystack — show success
+        document.getElementById('payForm').style.display = 'none';
+        document.getElementById('paySuccess').style.display = 'block';
+        document.getElementById('successRef').textContent = 'Reference: ' + ref;
+        document.getElementById('payModal').classList.add('show');
+        // Clean URL
+        window.history.replaceState({}, '', window.location.pathname);
+    }
+});
+
+document.getElementById('payModal').addEventListener('click', function(e) { if (e.target === this) closePay(); });
+
+const obs = new IntersectionObserver(e => { e.forEach(x => { if (x.isIntersecting) { x.target.style.opacity = '1'; x.target.style.transform = 'translateY(0)'; } }); }, { threshold: 0.1 });
+document.querySelectorAll('.sec,.st,.cr,.ft,.pr,.cta-box').forEach(el => {
+    el.style.opacity = '0'; el.style.transform = 'translateY(20px)'; el.style.transition = 'opacity 0.6s ease, transform 0.6s ease'; obs.observe(el);
+});
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => { e.preventDefault(); const t = document.querySelector(a.getAttribute('href')); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+});
+</script>
+</body>
+</html>

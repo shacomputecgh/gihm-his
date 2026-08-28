@@ -27,7 +27,9 @@ Every mutation carries:
 
 ## 4. Conflict handling (spec §101–103)
 
-Append-oriented clinical data (encounters, notes, orders, prescriptions) minimizes destructive conflicts by design. Where an update conflict occurs: both versions are preserved, users/timestamps compared, safe field-level merges only, human review otherwise — **clinical information is never silently discarded** (§166). (Server-side conflict comparison is a Phase 6 refinement; the data model already supports it.)
+Append-oriented clinical data (encounters, notes, orders, prescriptions) minimizes destructive conflicts by design. Where an update conflict occurs: both versions are preserved, users/timestamps compared, safe field-level merges only, human review otherwise — **clinical information is never silently discarded** (§166).
+
+**Shipped (6f)** — server-side conflict comparison. Targeted updates (e.g. a lab result) carry an optional `baseVersion` (the entity's `updatedAt` the client edited from). When the update arrives stale (`baseVersion` older than the server state): the mutation is **not applied**, a `SyncConflict` row preserves **both versions** (`serverVersion` + `clientVersion`), and the mutation log records `CONFLICT`. Re-syncing the same transaction returns the same conflict (no duplicates). An administrator reviews in **Admin → Sync conflicts** (`GET/POST /admin/sync/conflicts…`, permission `manage_sync_conflicts`) and resolves deliberately: **keep server version** (discard the stale edit), **apply client version** (the preserved payload is re-applied — the change is never lost), or **mark reviewed** with a note. Every resolution is audit-logged. CREATEs remain protected by idempotency keys + MPI duplicate review.
 
 ## 5. Failure handling
 

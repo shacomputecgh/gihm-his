@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
+import AddNewForm from '../../components/AddNewForm';
 import { Link } from 'react-router-dom';
 import { api } from '../../lib/api';
 import type { Patient, Page } from '../../types';
@@ -22,8 +23,24 @@ export default function Patients() {
     e.preventDefault();
   }
 
+  const [showAdd, setShowAdd] = useState(false)
+  const [editingItem, setEditingItem] = useState<Record<string, string> | null>(null);
   return (
     <div>
+      <div className="flex justify-end mb-4">
+        <button onClick={() => setShowAdd(!showAdd)} className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition shadow">
+          {showAdd ? "\u2715 Cancel" : "+ Add New"}
+        </button>
+      </div>
+      {showAdd && (
+        <AddNewForm
+          title="Add New Patients"
+          fields={[{"name": "fullName", "label": "Full Name", "type": "text", "placeholder": "e.g. Abena Osei", "required": true}, {"name": "dateOfBirth", "label": "Date of Birth", "type": "date", "required": true}, {"name": "sex", "label": "Sex", "type": "select", "options": ["Female", "Male", "Other"]}, {"name": "phone", "label": "Phone", "type": "tel", "placeholder": "0244 000 000"}, {"name": "nationality", "label": "Nationality", "type": "select", "options": ["Ghanaian", "Nigerian", "British", "Indian", "Other"]}, {"name": "bloodGroup", "label": "Blood Group", "type": "select", "options": ["O+", "O-", "A+", "A-", "B+", "B-", "AB+", "AB-"]}]}
+          onSave={(data) => { console.log("Saving:", data); setShowAdd(false); }}
+          initialData={editingItem}
+          onCancel={() => { setShowAdd(false); setEditingItem(null); }}
+        />
+      )}
       <PageHeader
         title="Patient Registry"
         subtitle="Search the Master Patient Index by name, MRN, Ghana Card, NHIS or phone."
@@ -80,7 +97,8 @@ export default function Patients() {
                         {p.ghanaCard && <Badge tone="navy">Ghana Card</Badge>}
                         {p.nhisNumber && <Badge tone="green">NHIS</Badge>}
                         {p.allergies.length > 0 && <Badge tone="red">Allergy</Badge>}
-                        {!p.ghanaCard && !p.nhisNumber && p.allergies.length === 0 && <span className="text-xs text-slate-300">—</span>}
+                        {(p.documentsCount ?? 0) > 0 && <Badge tone="gold"><Icon name="folder" className="mr-0.5 inline h-3 w-3" />{p.documentsCount}</Badge>}
+                        {!p.ghanaCard && !p.nhisNumber && p.allergies.length === 0 && (p.documentsCount ?? 0) === 0 && <span className="text-xs text-slate-300">—</span>}
                       </div>
                     </td>
                     <td className="hidden px-5 py-3.5 lg:table-cell text-slate-500">{p.district?.name ?? '—'}</td>

@@ -2,11 +2,23 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { api } from '../../lib/api';
 import type { District, Facility, Region } from '../../types';
-import { Badge, Card, EmptyState, Field, Icon, Input, Select, Spinner } from '../../components/ui';
+import { Badge, Card, EmptyState, Field, Icon, Input, Segmented, Select, Spinner } from '../../components/ui';
 import { FACILITY_TYPE_LABELS, SERVICE_LABELS, titleCase } from '../../lib/format';
 
 const FACILITY_TYPES = Object.keys(FACILITY_TYPE_LABELS);
 const OWNERSHIPS = ['GOVERNMENT', 'GHS', 'MOH', 'TEACHING_HOSPITAL', 'CHAG_MISSION', 'PRIVATE', 'QUASI_GOVT', 'NGO', 'OTHER'];
+/** Public-sector ownership codes — the hybrid platform's "Government" sector. */
+const PUBLIC_OWNERSHIPS = 'GOVERNMENT,GHS,MOH,TEACHING_HOSPITAL,CHAG_MISSION,QUASI_GOVT';
+
+/** Small sector badge for directory cards. */
+export function SectorBadge({ ownership, className }: { ownership: string; className?: string }) {
+  const isPrivate = ownership === 'PRIVATE' || ownership === 'NGO';
+  return (
+    <Badge tone={isPrivate ? 'gold' : 'navy'} className={className}>
+      {isPrivate ? '💼 Private' : '🏛 Government'}
+    </Badge>
+  );
+}
 
 export default function FindHealthcare() {
   const [params, setParams] = useSearchParams();
@@ -20,6 +32,8 @@ export default function FindHealthcare() {
   const districtId = params.get('districtId') ?? '';
   const type = params.get('type') ?? '';
   const ownership = params.get('ownership') ?? '';
+  const sector = params.get('sector') ?? '';
+  const ownershipIn = sector === 'GOVERNMENT' ? PUBLIC_OWNERSHIPS : sector === 'PRIVATE' ? 'PRIVATE' : '';
   const page = Number(params.get('page') ?? '1');
 
   useEffect(() => {
@@ -35,12 +49,12 @@ export default function FindHealthcare() {
     setLoading(true);
     void api<{ items: Facility[]; total: number; pages: number; page: number }>('/facilities', {
       public: true,
-      query: { q, regionId, districtId, type, ownership, page: String(page), pageSize: '9' },
+      query: { q, regionId, districtId, type, ownership, ownershipIn: ownershipIn || undefined, page: String(page), pageSize: '9' },
     })
       .then(setData)
       .catch(() => setData(null))
       .finally(() => setLoading(false));
-  }, [q, regionId, districtId, type, ownership, page]);
+  }, [q, regionId, districtId, type, ownership, ownershipIn, page]);
 
   const update = (key: string, value: string) => {
     const next = new URLSearchParams(params);
@@ -54,10 +68,23 @@ export default function FindHealthcare() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10">
-      <h1 className="text-3xl font-bold text-g-ink">Find Healthcare</h1>
-      <p className="mt-1 text-sm text-slate-500">Search the national facility directory by name, region, district, type or ownership.</p>
+      <h1 className="text-3xl font-bold text-g-ink dark:text-g-dark-text">Find Healthcare</h1>
+      <p className="mt-1 text-sm text-slate-500 dark:text-g-dark-muted">One hybrid directory — search government and private facilities across Ghana.</p>
 
-      <Card className="mt-6">
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+        <Segmented
+          value={sector}
+          onChange={(v) => update('sector', v)}
+          options={[
+            { value: '', label: 'All sectors' },
+            { value: 'GOVERNMENT', label: '🏛 Government' },
+            { value: 'PRIVATE', label: '💼 Private' },
+          ]}
+        />
+        <p className="text-xs text-slate-400 dark:text-g-dark-muted">{data ? `${data.total} facilit${data.total === 1 ? 'y' : 'ies'} in view` : ' '}</p>
+      </div>
+
+      <Card className="mt-4">
         <div className="grid gap-4 md:grid-cols-6">
           <div className="md:col-span-2">
             <Field label="Search">
@@ -91,8 +118,8 @@ export default function FindHealthcare() {
         </div>
       </Card>
 
-      <p className="mt-6 text-sm text-slate-500">
-        <strong className="text-g-ink">{data?.total ?? '—'}</strong> facilities found
+      <p className="mt-6 text-sm text-slate-500 dark:text-g-dark-muted">
+        <strong className="text-g-ink dark:text-g-dark-text">{data?.total ?? '—'}</strong> facilities found
         {regionName && <> in <strong className="text-g-ink">{regionName}</strong></>}
       </p>
 
@@ -102,14 +129,17 @@ export default function FindHealthcare() {
         ) : data && data.items.length > 0 ? (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {data.items.map((f) => (
-              <Link key={f.id} to={`/facilities/${f.id}`} className="card-hover flex flex-col rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+              <Link key={f.id} to={`/facilities/${f.id}`} className="card-hover flex flex-col rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-g-dark-border dark:bg-g-dark-surface">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-g-red/10 text-g-red">
                     <Icon name="building" className="h-5 w-5" />
                   </div>
-                  <Badge tone={f.type === 'TEACHING_HOSPITAL' ? 'navy' : f.level === 'TERTIARY' ? 'red' : 'green'}>
-                    {FACILITY_TYPE_LABELS[f.type] ?? titleCase(f.type)}
-                  </Badge>
+                  <div className="flex flex-col items-end gap-1">
+                    <SectorBadge ownership={f.ownership} />
+                    <Badge tone={f.type === 'TEACHING_HOSPITAL' ? 'navy' : f.level === 'TERTIARY' ? 'red' : 'green'}>
+                      {FACILITY_TYPE_LABELS[f.type] ?? titleCase(f.type)}
+                    </Badge>
+                  </div>
                 </div>
                 <h3 className="mt-3 font-bold text-g-ink">{f.name.replace(' (DEMO)', '')}</h3>
                 <p className="mt-0.5 flex items-center gap-1 text-xs text-slate-500">

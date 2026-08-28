@@ -1,16 +1,35 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { api } from '../../lib/api';
-import type { Appointment, ImmunizationDueRow, Patient } from '../../types';
+import { api, downloadFile } from '../../lib/api';
+import type { Appointment, ImmunizationDueRow, Patient, PatientDocument } from '../../types';
 import { Badge, Card, DemoBanner, EmptyState, FlagStripe, Icon, Spinner } from '../../components/ui';
 import { useAuth } from '../../lib/auth';
-import { ageFromDob, fmtDate, fmtDateTime, VACCINE_LABELS } from '../../lib/format';
+import { ageFromDob, fmtDate, fmtDateTime, fmtBytes, titleCase, VACCINE_LABELS } from '../../lib/format';
+
+/** Folder categories shown to patients (mirrors the staff allowlist). */
+const DOC_LABELS: Record<string, string> = {
+  GHANA_CARD: 'Ghana Card',
+  NHIS_CARD: 'NHIS Card',
+  PASSPORT: 'Passport',
+  VISA_PERMIT: 'Visa / Permit',
+  IDENTITY: 'ID / Voter card',
+  REFERRAL_LETTER: 'Referral letter',
+  LAB_RESULT: 'Lab result',
+  IMAGING: 'Imaging / scan',
+  PRESCRIPTION: 'Prescription',
+  DISCHARGE_SUMMARY: 'Discharge summary',
+  CONSENT: 'Consent form',
+  INSURANCE: 'Insurance',
+  MEDICAL_RECORD: 'Previous medical record',
+  OTHER: 'Other',
+};
 
 export default function PatientHome() {
   const { user, logout } = useAuth();
   const [patient, setPatient] = useState<Patient | null>(null);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [dueImms, setDueImms] = useState<ImmunizationDueRow[]>([]);
+  const [documents, setDocuments] = useState<PatientDocument[] | null>(null);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
@@ -26,6 +45,10 @@ export default function PatientHome() {
           .then((a) => setAppointments(a.items)).catch(() => undefined);
         void api<{ items: ImmunizationDueRow[] }>('/immunizations/due')
           .then((d) => setDueImms(d.items)).catch(() => undefined);
+        // The digital folder is read-only for patients — they can only ever see
+        // (and download) their own uploaded documents.
+        void api<{ documents: PatientDocument[] }>(`/patients/${mine.id}/documents`)
+          .then((r) => setDocuments(r.documents)).catch(() => setDocuments([]));
       })
       .catch(() => setFailed(true));
   }, [user]);
@@ -136,6 +159,41 @@ export default function PatientHome() {
                 )}
               </Card>
             </div>
+
+            <Card
+              title="My documents"
+              subtitle="Files your care team has placed in your digital folder — available to download anytime."
+              action={<Icon name="folder" className="h-5 w-5 text-g-navy" />}
+            >
+              {!documents ? (
+                <div className="py-4"><Spinner /></div>
+              ) : documents.length === 0 ? (
+                <p className="py-4 text-center text-sm text-slate-400">Your digital folder is empty — documents added by your care team will appear here.</p>
+              ) : (
+                <div className="divide-y divide-slate-50">
+                  {documents.map((d) => (
+                    <div key={d.id} className="flex items-center justify-between gap-3 py-2.5 text-sm">
+                      <div className="flex min-w-0 items-center gap-3">
+                        <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${d.mimeType.startsWith('image/') ? 'bg-g-gold/15 text-g-gold' : 'bg-g-navy/10 text-g-navy'}`}>
+                          <Icon name="fileText" className="h-4 w-4" />
+                        </span>
+                        <div className="min-w-0">
+                          <p className="truncate font-semibold text-g-ink" title={d.originalName}>{d.originalName}</p>
+                          <p className="text-xs text-slate-400">{DOC_LABELS[d.category] ?? titleCase(d.category)} · {fmtBytes(d.sizeBytes)} · {fmtDate(d.createdAt)}</p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => void downloadFile(`/patients/${d.patientId}/documents/${d.id}/content`, d.originalName)}
+                        className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-lg bg-g-navy/10 px-3 py-1.5 text-xs font-bold text-g-navy transition hover:bg-g-navy/20"
+                      >
+                        <Icon name="download" className="h-3.5 w-3.5" /> Download
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Card>
 
             <Card title="My records">
               <div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">

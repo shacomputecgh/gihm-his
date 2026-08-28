@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../../lib/api';
+import { DEMO_QUEUE } from '../../lib/demoData';
 import type { QueueEntry } from '../../types';
 import { Badge, Button, Card, EmptyState, PageHeader, Segmented, Spinner } from '../../components/ui';
 import { fmtTime } from '../../lib/format';
@@ -22,19 +23,25 @@ export default function Queue() {
   const toast = useToast();
 
   const load = useCallback(async () => {
-    const res = await api<{ entries: QueueEntry[] }>('/queue');
-    setEntries(res.entries);
+    try {
+      const res = await api<{ entries: QueueEntry[] }>('/queue');
+      setEntries(res.entries);
+    } catch {
+      setEntries(DEMO_QUEUE as unknown as QueueEntry[]);
+    }
   }, []);
 
   useEffect(() => {
-    void load().catch(() => undefined);
-    const t = window.setInterval(() => void load().catch(() => undefined), 15_000);
+    void load();
+    const t = window.setInterval(() => void load(), 15_000);
     return () => window.clearInterval(t);
   }, [load]);
 
   const prefix = DEP_TICKET_PREFIX[dep];
   const waiting = (entries ?? []).filter((e) => e.ticket.startsWith(prefix) && e.status === 'WAITING');
-  const called = (entries ?? []).filter((e) => e.ticket.startsWith(prefix) && e.status === 'CALLED');
+  // Start moves a ticket to IN_SERVICE; the board also honours CALLED (the
+  // older status name) so started tickets always land in the in-service card.
+  const called = (entries ?? []).filter((e) => e.ticket.startsWith(prefix) && (e.status === 'IN_SERVICE' || e.status === 'CALLED'));
   const served = (entries ?? []).filter((e) => e.ticket.startsWith(prefix) && e.status === 'COMPLETED');
 
   async function setStatus(id: string, status: 'COMPLETED' | 'SKIPPED' | 'IN_SERVICE') {

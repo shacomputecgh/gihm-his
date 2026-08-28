@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import AddNewForm from '../../components/AddNewForm';
 import { api } from '../../lib/api';
 import type { Bed, Patient } from '../../types';
 import { Badge, Button, EmptyState, Input, PageHeader, Select, Spinner, useToast } from '../../components/ui';
@@ -25,8 +26,10 @@ const STATUS_LABEL: Record<string, string> = {
 
 export default function Beds() {
   const [ward, setWard] = useState<string>('ALL');
+  const [unitId, setUnitId] = useState<string>('ALL');
   const [beds, setBeds] = useState<Bed[] | null>(null);
   const [wards, setWards] = useState<string[]>([]);
+  const [units, setUnits] = useState<Bed['unit'][]>([]);
   const [assignFor, setAssignFor] = useState<Bed | null>(null);
   const [patientQ, setPatientQ] = useState('');
   const [patientResults, setPatientResults] = useState<Patient[]>([]);
@@ -34,11 +37,15 @@ export default function Beds() {
   const toast = useToast();
 
   const load = useCallback(async () => {
-    const q = ward === 'ALL' ? '' : `?ward=${encodeURIComponent(ward)}`;
-    const res = await api<{ items: Bed[]; wards: string[] }>(`/beds${q}`);
+    const params = new URLSearchParams();
+    if (ward !== 'ALL') params.set('ward', ward);
+    if (unitId !== 'ALL') params.set('unitId', unitId);
+    const q = params.toString();
+    const res = await api<{ items: Bed[]; wards: string[]; units: Bed['unit'][] }>(`/beds${q ? `?${q}` : ''}`);
     setBeds(res.items);
     setWards(res.wards);
-  }, [ward]);
+    setUnits(res.units ?? []);
+  }, [ward, unitId]);
 
   useEffect(() => {
     void load().catch(() => undefined);
@@ -87,16 +94,38 @@ export default function Beds() {
   const visible = beds ?? [];
   const summary = wards.map((w) => ({
     ward: w,
+    unitName: visible.find((b) => b.ward === w)?.unit?.name ?? null,
+    departmentName: visible.find((b) => b.ward === w)?.unit?.department?.name ?? null,
     total: visible.filter((b) => b.ward === w).length,
     occupied: visible.filter((b) => b.ward === w && b.status === 'OCCUPIED').length,
     available: visible.filter((b) => b.ward === w && (b.status === 'AVAILABLE' || b.status === 'CLEANING')).length,
   }));
 
+  const [showAdd, setShowAdd] = useState(false)
+  const [editingItem, setEditingItem] = useState<Record<string, string> | null>(null);
   return (
     <div>
+      <div className="flex justify-end mb-4">
+        <button onClick={() => setShowAdd(!showAdd)} className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition shadow">
+          {showAdd ? "\u2715 Cancel" : "+ Add New"}
+        </button>
+      </div>
+      {showAdd && (
+        <AddNewForm
+          title="Add New Bed"
+          fields={[{"name": "fullName", "label": "Full Name", "type": "text", "placeholder": "e.g. Abena Osei", "required": true}, {"name": "dateOfBirth", "label": "Date of Birth", "type": "date", "required": true}, {"name": "sex", "label": "Sex", "type": "select", "options": ["Female", "Male", "Other"]}, {"name": "phone", "label": "Phone", "type": "tel", "placeholder": "0244 000 000"}, {"name": "nationality", "label": "Nationality", "type": "select", "options": ["Ghanaian", "Nigerian", "British", "Indian", "Other"]}, {"name": "bloodGroup", "label": "Blood Group", "type": "select", "options": ["O+", "O-", "A+", "A-", "B+", "B-", "AB+", "AB-"]}]}
+          onSave={(data) => { console.log("Saving:", data); setShowAdd(false); }}
+          initialData={editingItem}
+          onCancel={() => { setShowAdd(false); setEditingItem(null); }}
+        />
+      )}
       <PageHeader title="Bed management" subtitle="Ward bed board — occupancy, cleaning, maintenance and isolation." />
       <div className="mb-5 flex flex-wrap items-center gap-3">
-        <Select value={ward} onChange={(e) => setWard(e.target.value)} className="w-64">
+        <Select value={unitId} onChange={(e) => { setUnitId(e.target.value); setWard('ALL'); }} className="w-64">
+          <option value="ALL">All units</option>
+          {units.map((u) => <option key={u!.id} value={u!.id}>{u!.name}</option>)}
+        </Select>
+        <Select value={ward} onChange={(e) => { setWard(e.target.value); setUnitId('ALL'); }} className="w-64">
           <option value="ALL">All wards</option>
           {wards.map((w) => <option key={w} value={w}>{w}</option>)}
         </Select>
@@ -114,7 +143,14 @@ export default function Beds() {
           {summary.map((s) => (
             <div key={s.ward}>
               <div className="mb-2 flex items-center justify-between">
-                <h3 className="text-sm font-bold text-g-ink">{s.ward}</h3>
+                <div>
+                  <h3 className="text-sm font-bold text-g-ink">{s.ward}</h3>
+                  {(s.unitName || s.departmentName) && (
+                    <p className="text-[11px] text-slate-400">
+                      {s.departmentName ?? ''}{s.departmentName && s.unitName ? ' · ' : ''}{s.unitName ?? ''}
+                    </p>
+                  )}
+                </div>
                 <span className="text-xs text-slate-400">{s.occupied}/{s.total} occupied · {s.available} available</span>
               </div>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GIHM-HIS — App Screenshots</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #e2e8f0; }
+    .hero { text-align: center; padding: 2rem 1rem; background: linear-gradient(135deg, #12203a 0%, #1e3a5f 100%); }
+    .hero h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+    .hero p { color: #94a3b8; }
+    .badge { display: inline-block; background: #10b981; color: white; padding: 4px 12px; border-radius: 999px; font-size: 0.75rem; font-weight: bold; margin-top: 0.5rem; }
+    .gallery { max-width: 1000px; margin: 0 auto; padding: 2rem 1rem; }
+    .screenshot { margin-bottom: 2rem; }
+    .screenshot h3 { color: #f1f5f9; margin-bottom: 0.5rem; font-size: 1.1rem; }
+    .screenshot p { color: #64748b; font-size: 0.85rem; margin-bottom: 0.75rem; }
+    .screenshot img { width: 100%; border-radius: 12px; border: 2px solid #334155; }
+    .footer { text-align: center; padding: 2rem; color: #475569; font-size: 0.8rem; }
+    .tech { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; margin-top: 1rem; }
+    .tech span { background: #334155; padding: 4px 12px; border-radius: 6px; font-size: 0.75rem; color: #94a3b8; }
+  </style>
+</head>
+<body>
+  <div class="hero">
+    <h1>🏥 GIHM-HIS — Ghana Integrated Health Management</h1>
+    <p>Screenshots of the running application</p>
+    <div class="badge">✅ All 16+ Modules Working</div>
+    <div class="tech">
+      <span>React 19</span><span>Vite</span><span>Fastify</span><span>Prisma</span>
+      <span>SQLite</span><span>Tailwind CSS</span><span>PWA</span><span>TypeScript 0 errors</span>
+    </div>
+  </div>
+
+  <div class="gallery">
+    <div class="screenshot">
+      <h3>1. 🏠 Public Landing Page</h3>
+      <p>The public-facing facility directory and health information portal — works without login.</p>
+      <img src="1-landing.png" alt="Landing page" loading="lazy">
+    </div>
+
+    <div class="screenshot">
+      <h3>2. 🔐 Login Page</h3>
+      <p>Government and private hospital sector login with demo accounts. JWT-based authentication.</p>
+      <img src="2-login.png" alt="Login page" loading="lazy">
+    </div>
+
+    <div class="screenshot">
+      <h3>3. 📊 Dashboard</h3>
+      <p>Hospital KPIs, patient statistics, bed occupancy, and real-time metrics. Sidebar navigation to all modules.</p>
+      <img src="3-dashboard.png" alt="Dashboard" loading="lazy">
+    </div>
+
+    <div class="screenshot">
+      <h3>4. 👥 Patients</h3>
+      <p>Master Patient Index with search, registration, MRN allocation, merge/unmerge, and digital patient folder.</p>
+      <img src="4-patients.png" alt="Patients" loading="lazy">
+    </div>
+
+    <div class="screenshot">
+      <h3>5. 💊 Drug Database</h3>
+      <p>194+ drugs with visual identification, WHO/Ghana essential lists, interaction checker, and PDF export.</p>
+      <img src="5-drug-database.png" alt="Drug Database" loading="lazy">
+    </div>
+
+    <div class="screenshot">
+      <h3>6. 🤖 Dr. August AI</h3>
+      <p>AI clinical assistant — drug information, disease reference, treatment protocols powered by LLM or local database.</p>
+      <img src="6-dr-august-ai.png" alt="Dr. August AI" loading="lazy">
+    </div>
+
+    <div class="screenshot">
+      <h3>7. 📋 Clinical Guidelines</h3>
+      <p>Evidence-based protocols for malaria, TB, HIV, cholera, pneumonia, and diarrhoea — sourced from WHO and Ghana Health Service.</p>
+      <img src="7-clinical-guidelines.png" alt="Clinical Guidelines" loading="lazy">
+    </div>
+
+    <div class="screenshot">
+      <h3>8. 💉 Pharmacy</h3>
+      <p>Prescription worklist, drug dispensing, stock management, expiry tracking.</p>
+      <img src="8-pharmacy.png" alt="Pharmacy" loading="lazy">
+    </div>
+
+    <div class="screenshot">
+      <h3>9. 📡 Surveillance</h3>
+      <p>Disease outbreak tracking, case management, contact tracing, DHIMS2/SORMAS integration.</p>
+      <img src="9-surveillance.png" alt="Surveillance" loading="lazy">
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>GIHM-HIS — Ghana Integrated Health Management & Hospital Information System</p>
+    <p>Foundation prototype · Demo data only · Not affiliated with MoH or GHS</p>
+  </div>
+</body>
+</html>

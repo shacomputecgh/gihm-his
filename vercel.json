@@ -1,0 +1,9 @@
+{
+  "name": "gihm-his",
+  "buildCommand": "npm install -w apps/web && cd apps/web && npm run build",
+  "outputDirectory": "apps/web/dist",
+  "framework": "vite",
+  "rewrites": [
+    { "source": "/((?!assets/|.*\\..*).*)", "destination": "/index.html" }
+  ]
+}

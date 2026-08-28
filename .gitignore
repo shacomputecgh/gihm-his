@@ -21,6 +21,33 @@ apps/api/prisma/*.db*
 coverage/
 apps/api/tests/.tmp/
 
+# Uploaded patient documents (digital folder)
+apps/api/uploads/
+
+# Playwright
+playwright-report/
+test-results/
+e2e/.auth/
+
+# Facility edge (deploy/edge) — secrets, backups, relay cursor
+.env
+.env.*
+deploy/edge/.env*
+deploy/edge/backups/
+edge-relay-state.json
+
+# .NET clients
+clients/**/bin/
+clients/**/obj/
+
+# Tauri desktop shell
+desktop/node_modules/
+desktop/src-tauri/target/
+desktop/.signing/
+
+# Load testing — k6 binary is downloaded by tools/k6/ensure.js (never committed)
+tools/k6/k6
+
 # Logs
 *.log
 npm-debug.log*
@@ -28,3 +55,14 @@ npm-debug.log*
 # OS
 .DS_Store
 Thumbs.db
+
+.vercel
+installers/
+electron-app/dist/
+electron-app/node_modules/
+electron-app/api/node_modules/
+installers/
+electron-app/dist/
+electron-app/node_modules/
+electron-app/api/node_modules/
+electron-app/frontend/

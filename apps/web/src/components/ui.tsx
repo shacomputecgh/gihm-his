@@ -44,13 +44,13 @@ export function Button({ variant = 'primary', size = 'md', loading, icon, classN
 }
 
 // ------------------------------------------------------------------- Card
-export function Card({ title, subtitle, action, children, className, pad = true }: { title?: ReactNode; subtitle?: ReactNode; action?: ReactNode; children: ReactNode; className?: string; pad?: boolean }) {
+export function Card({ title, subtitle, action, children, className, pad = true, onClick }: { title?: ReactNode; subtitle?: ReactNode; action?: ReactNode; children: ReactNode; className?: string; pad?: boolean; onClick?: () => void }) {
   return (
-    <div className={cn('rounded-xl border border-slate-200 bg-white shadow-sm', className)}>
+    <div onClick={onClick} className={cn('rounded-xl border border-slate-200 bg-white shadow-sm dark:border-g-dark-border dark:bg-g-dark-surface', onClick && 'cursor-pointer hover:shadow-md transition-shadow', className)}>
       {(title || action) && (
-        <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-5 py-3.5">
+        <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-5 py-3.5 dark:border-g-dark-border">
           <div>
-            <h3 className="text-sm font-semibold text-g-ink">{title}</h3>
+            <h3 className="text-sm font-semibold text-g-ink dark:text-g-dark-text">{title}</h3>
             {subtitle && <p className="mt-0.5 text-xs text-slate-500">{subtitle}</p>}
           </div>
           {action}
@@ -62,15 +62,17 @@ export function Card({ title, subtitle, action, children, className, pad = true 
 }
 
 // ------------------------------------------------------------------- Badge
-type Tone = 'green' | 'red' | 'gold' | 'navy' | 'gray' | 'blue';
+type Tone = 'green' | 'red' | 'gold' | 'navy' | 'gray' | 'blue' | 'purple' | 'orange';
 export type { Tone };
 const TONES: Record<Tone, string> = {
-  green: 'bg-g-green/10 text-g-green border-g-green/20',
-  red: 'bg-g-red/10 text-g-red border-g-red/20',
-  gold: 'bg-g-gold/20 text-yellow-800 border-g-gold/40',
-  navy: 'bg-g-navy/10 text-g-navy border-g-navy/20',
-  gray: 'bg-slate-100 text-slate-600 border-slate-200',
-  blue: 'bg-sky-50 text-sky-700 border-sky-200',
+  green: 'bg-g-green/10 text-g-green border-g-green/20 dark:bg-g-green/20 dark:text-green-300 dark:border-green-700',
+  red: 'bg-g-red/10 text-g-red border-g-red/20 dark:bg-g-red/20 dark:text-red-300 dark:border-red-700',
+  gold: 'bg-g-gold/20 text-yellow-800 border-g-gold/40 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-700',
+  navy: 'bg-g-navy/10 text-g-navy border-g-navy/20 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700',
+  gray: 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600',
+  blue: 'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-900/30 dark:text-sky-300 dark:border-sky-700',
+  purple: 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-700',
+  orange: 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-700',
 };
 export function Badge({ tone = 'gray', children, className }: { tone?: Tone; children: ReactNode; className?: string }) {
   return <span className={cn('inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap', TONES[tone], className)}>{children}</span>;
@@ -87,11 +89,11 @@ export function StatCard({ label, value, icon, tone = 'navy', hint }: { label: s
     blue: 'bg-sky-50 text-sky-600',
   };
   return (
-    <div className="card-hover rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div className="card-hover rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-g-dark-border dark:bg-g-dark-surface">
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-xs font-medium text-slate-500">{label}</p>
-          <p className="mt-1.5 text-2xl font-bold text-g-ink tabular-nums">{value}</p>
+          <p className="text-xs font-medium text-slate-500 dark:text-g-dark-muted">{label}</p>
+          <p className="mt-1.5 text-2xl font-bold text-g-ink tabular-nums dark:text-g-dark-text">{value}</p>
           {hint && <p className="mt-1 text-[11px] text-slate-400">{hint}</p>}
         </div>
         <div className={cn('rounded-lg p-2.5', ICON_TONES[tone])}>
@@ -113,7 +115,7 @@ export function Field({ label, hint, children, className }: { label: string; hin
   );
 }
 const INPUT_CLS =
-  'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-g-ink placeholder:text-slate-400 focus:border-g-red focus:outline-none focus:ring-2 focus:ring-g-red/20 transition';
+  'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-g-ink placeholder:text-slate-400 focus:border-g-red focus:outline-none focus:ring-2 focus:ring-g-red/20 transition dark:border-g-dark-border dark:bg-g-dark-surface dark:text-g-dark-text dark:placeholder:text-slate-500';
 export function Input({ className, ...rest }: InputHTMLAttributes<HTMLInputElement>) {
   return <input className={cn(INPUT_CLS, className)} {...rest} />;
 }
@@ -153,8 +155,8 @@ export function PageHeader({ title, subtitle, action }: { title: string; subtitl
   return (
     <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
       <div>
-        <h1 className="text-2xl font-bold text-g-ink">{title}</h1>
-        {subtitle && <p className="mt-1 text-sm text-slate-500">{subtitle}</p>}
+        <h1 className="text-2xl font-bold text-g-ink dark:text-g-dark-text">{title}</h1>
+        {subtitle && <p className="mt-1 text-sm text-slate-500 dark:text-g-dark-muted">{subtitle}</p>}
       </div>
       {action && <div className="flex gap-2">{action}</div>}
     </div>
@@ -163,7 +165,7 @@ export function PageHeader({ title, subtitle, action }: { title: string; subtitl
 
 export function Segmented<T extends string>({ options, value, onChange }: { options: { value: T; label: string }[]; value: T; onChange: (v: T) => void }) {
   return (
-    <div className="inline-flex flex-wrap gap-1 rounded-lg bg-g-mist p-1">
+    <div className="inline-flex flex-wrap gap-1 rounded-lg bg-g-mist p-1 dark:bg-g-dark-surface">
       {options.map((o) => (
         <button
           key={o.value}
@@ -235,5 +237,33 @@ export function Toaster({ children }: { children: ReactNode }) {
         ))}
       </div>
     </ToastContext.Provider>
+  );
+}
+
+// ------------------------------------------------------------------ Modal
+export function Modal({ onClose, children, className }: { onClose: () => void; children: ReactNode; className?: string }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
+      <div className={cn('relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl', className)} onClick={(e) => e.stopPropagation()}>
+        <button onClick={onClose} className="absolute right-3 top-3 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition text-sm font-bold" aria-label="Close">
+          ✕
+        </button>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// ------------------------------------------------------------------ Drawer
+export function Drawer({ onClose, children, className }: { onClose: () => void; children: ReactNode; className?: string }) {
+  return (
+    <div className="fixed inset-0 z-40 flex justify-end bg-g-ink/30" onClick={onClose}>
+      <div className={cn('relative flex h-full w-full max-w-lg flex-col overflow-y-auto bg-white shadow-2xl', className)} onClick={(e) => e.stopPropagation()}>
+        <button onClick={onClose} className="absolute right-3 top-3 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition text-sm font-bold" aria-label="Close">
+          ✕
+        </button>
+        {children}
+      </div>
+    </div>
   );
 }

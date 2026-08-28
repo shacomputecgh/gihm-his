@@ -35,6 +35,10 @@ export default function Ambulances() {
   const [patientResults, setPatientResults] = useState<Patient[]>([]);
   const [form, setForm] = useState({ registration: '', model: '', driverName: '', driverPhone: '', fuelLevel: '' });
   const [tripForm, setTripForm] = useState({ patientId: '', patientQ: '', emergencyType: 'MEDICAL', pickupLocation: '', destinationFacilityId: '', notes: '' });
+  // The picked patient object survives the dropdown close — dispatch() must
+  // not re-derive it from patientResults (cleared on pick, so a submit would
+  // always fail with "Select a patient from the results").
+  const [pickedPatient, setPickedPatient] = useState<Patient | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const toast = useToast();
 
@@ -85,7 +89,7 @@ export default function Ambulances() {
   async function dispatch(e: FormEvent) {
     e.preventDefault();
     if (!dispatchFor) return;
-    const patient = patientResults.find((p) => p.id === tripForm.patientId) ?? null;
+    const patient = pickedPatient;
     if (!patient) { toast('Select a patient from the results', 'error'); return; }
     setBusyId(dispatchFor.id);
     try {
@@ -102,6 +106,7 @@ export default function Ambulances() {
       });
       toast(`Dispatched ${dispatchFor.registration}`, 'success');
       setDispatchFor(null);
+      setPickedPatient(null);
       setTripForm({ patientId: '', patientQ: '', emergencyType: 'MEDICAL', pickupLocation: '', destinationFacilityId: '', notes: '' });
       setPatientResults([]);
       void load();
@@ -263,7 +268,7 @@ export default function Ambulances() {
                       <button
                         key={p.id}
                         type="button"
-                        onClick={() => { setTripForm((f) => ({ ...f, patientId: p.id, patientQ: `${p.fullName} (${p.mrn})` })); setPatientResults([]); }}
+                        onClick={() => { setPickedPatient(p); setTripForm((f) => ({ ...f, patientId: p.id, patientQ: `${p.fullName} (${p.mrn})` })); setPatientResults([]); }}
                         className="block w-full cursor-pointer px-3 py-2 text-left text-sm hover:bg-g-mist"
                       >
                         <span className="font-semibold text-g-ink">{p.fullName}</span>

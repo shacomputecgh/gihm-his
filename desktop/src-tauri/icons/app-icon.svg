@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#16294d"/>
+      <stop offset="1" stop-color="#0d1830"/>
+    </linearGradient>
+  </defs>
+  <!-- Rounded-square navy background -->
+  <rect x="16" y="16" width="480" height="480" rx="104" ry="104" fill="url(#bg)"/>
+  <rect x="16" y="16" width="480" height="480" rx="104" ry="104" fill="none" stroke="#2b4a80" stroke-width="8"/>
+
+  <!-- White medical cross -->
+  <g fill="#f8fafc">
+    <rect x="216" y="120" width="80" height="272" rx="18"/>
+    <rect x="120" y="216" width="272" height="80" rx="18"/>
+  </g>
+
+  <!-- Green pulse line through the cross -->
+  <g fill="none" stroke="#16a34a" stroke-width="22" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M40 256 h84 l24 -34 l40 84 l32 -50 h52"/>
+  </g>
+</svg>

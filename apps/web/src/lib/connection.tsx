@@ -1,13 +1,14 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { apiUrl } from './api';
 import { pendingCount, syncNow } from './offline';
 
-interface ConnectionState {
+export interface ConnectionState {
   online: boolean; // network reachability (navigator.onLine + health probe)
   serverHealthy: boolean | null;
   pending: number;
   syncing: boolean;
   lastSyncAt: string | null;
-  lastSyncResult: { processed: number; failed: number } | null;
+  lastSyncResult: { processed: number; failed: number; conflicts: number; notice?: string } | null;
   refresh: () => Promise<void>;
   sync: () => Promise<void>;
 }
@@ -20,13 +21,13 @@ export function ConnectionProvider({ children }: { children: ReactNode }) {
   const [pending, setPending] = useState(0);
   const [syncing, setSyncing] = useState(false);
   const [lastSyncAt, setLastSyncAt] = useState<string | null>(null);
-  const [lastSyncResult, setLastSyncResult] = useState<{ processed: number; failed: number } | null>(null);
+  const [lastSyncResult, setLastSyncResult] = useState<{ processed: number; failed: number; conflicts: number; notice?: string } | null>(null);
   const syncingRef = useRef(false);
 
   const refresh = useCallback(async () => {
     let healthy: boolean;
     try {
-      const res = await fetch('/api/v1/health', { cache: 'no-store' });
+      const res = await fetch(await apiUrl('/health'), { cache: 'no-store' });
       healthy = res.ok;
     } catch {
       healthy = false;
@@ -62,13 +63,22 @@ export function ConnectionProvider({ children }: { children: ReactNode }) {
     const onVisibility = () => {
       if (document.visibilityState === 'visible') void sync();
     };
+    const onShellSync = () => void sync();
+    // The outbox changed (a write was queued offline or drained by a sync) —
+    // refresh the pending count right away so the badge never lies between the
+    // 30s polls.
+    const onOutboxChanged = () => void refresh();
     window.addEventListener('online', onOnline);
     window.addEventListener('offline', onOffline);
+    window.addEventListener('gihm:sync-now', onShellSync);
+    window.addEventListener('gihm:outbox-changed', onOutboxChanged);
     document.addEventListener('visibilitychange', onVisibility);
     const poll = window.setInterval(() => void refresh(), 30_000);
     return () => {
       window.removeEventListener('online', onOnline);
       window.removeEventListener('offline', onOffline);
+      window.removeEventListener('gihm:sync-now', onShellSync);
+      window.removeEventListener('gihm:outbox-changed', onOutboxChanged);
       document.removeEventListener('visibilitychange', onVisibility);
       window.clearInterval(poll);
     };

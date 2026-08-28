@@ -36,7 +36,7 @@ export async function makeUser(opts: {
       code: uniqueCode,
       name: roleCode.replace(/_/g, ' '),
       scope: opts.scope ?? 'FACILITY',
-      permissions: JSON.stringify(opts.permissions ?? ['view_patient', 'create_patient', 'view_clinical_record', 'write_clinical_note', 'prescribe', 'order_lab', 'verify_lab', 'dispense', 'sync_data', 'view_dashboard', 'view_appointments', 'book_appointment', 'view_queue', 'manage_queue']),
+      permissions: JSON.stringify(opts.permissions ?? ['view_patient', 'create_patient', 'view_clinical_record', 'write_clinical_note', 'prescribe', 'order_lab', 'verify_lab', 'order_imaging', 'verify_imaging', 'dispense', 'sync_data', 'view_dashboard', 'view_appointments', 'book_appointment', 'view_queue', 'manage_queue']),
     },
   });
   const email = opts.email ?? `user-${Math.random().toString(36).slice(2, 8)}@demo.gh`;

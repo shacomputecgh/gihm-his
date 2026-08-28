@@ -14,4 +14,6 @@ RUN npx prisma generate
 
 ENV NODE_ENV=production
 EXPOSE 4000
-CMD ["npx", "tsx", "src/server.ts"]
+# Entrypoint applies the Prisma schema on boot for SQLite deployments
+# (facility edge + foundation quick-start) before starting the API.
+CMD ["sh", "docker-entrypoint.sh"]

@@ -1,0 +1,40 @@
+# GIHM-HIS facility edge (docs/16 §2, deploy/edge/README.md)
+# -----------------------------------------------------------------------------
+# Single-node deployment for a hospital LAN. Installed with ./install.sh,
+# backed up with ./backup.sh. Workstations reach the web UI + API through
+# nginx on port 8080; the API port is bound to localhost only (the relay and
+# operator tooling use it directly — never expose it to the LAN).
+#
+# Upstream relay: uncomment/configure EDGE_RELAY_* in .env to bubble the
+# facility's offline mutation log up to the national/regional platform.
+# -----------------------------------------------------------------------------
+services:
+  web:
+    build:
+      context: ../..
+      dockerfile: apps/web/Dockerfile
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ../..
+      dockerfile: apps/api/Dockerfile
+    ports:
+      - "127.0.0.1:${API_PORT:-4000}:4000"
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: file:/app/data/edge.db
+      WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:8080}
+      REMINDER_JOB_ENABLED: "true"
+    volumes:
+      - edge-data:/app/data
+      - ./backups:/backups
+    restart: unless-stopped
+
+volumes:
+  edge-data:
