@@ -11,6 +11,7 @@ import { buildReminderMessage } from '../immunization/reminders.js';
 import { scheduleItem, nextScheduleItem, DAY_MS } from '../immunization/schedule.js';
 import { assertPatientAccess } from '../patients/service.js';
 import { runWithoutCapture } from '../edge/capture.js';
+import { broadcastEntity } from './sse.js';
 
 interface Mutation {
   transactionId: string;
@@ -85,6 +86,11 @@ export function registerSyncRoutes(app: FastifyInstance, db: PrismaClient, guard
           const applied = await applyMutation(db, u, m, deviceId);
           processed++;
           results.push({ transactionId: m.transactionId, status: applied.status, entityId: applied.entityId, duplicated: applied.duplicated, conflictId: applied.conflictId });
+          // Real-time broadcast: push to all SSE subscribers
+          if (applied.status === 'PROCESSED' && applied.entityId) {
+            const bFacilityId = u.facilityId ?? (typeof m.payload.facilityId === 'string' ? m.payload.facilityId : undefined);
+            broadcastEntity(m.entityType, m.operation, applied.entityId, bFacilityId, m.payload);
+          }
         } catch (err) {
           failed++;
           const message = err instanceof Error ? err.message : 'Unknown error';

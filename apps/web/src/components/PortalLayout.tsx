@@ -3,7 +3,6 @@ import { FlagStripe, Icon } from './ui';
 import { useAuth } from '../lib/auth';
 import ThemeToggle from './ThemeToggle';
 import LanguageSelector from './LanguageSelector';
-import SocialMediaPopup from './SocialMediaPopup';
 
 const NAV = [
   { to: '/', label: 'Home' },
@@ -117,6 +116,13 @@ export default function PortalLayout() {
               <li className="flex items-center gap-2"><Icon name="wifi" className="h-3.5 w-3.5 text-g-green" /> Offline-first · Web · PWA</li>
               <li className="flex items-center gap-2"><Icon name="shield" className="h-3.5 w-3.5 text-g-red" /> HIPAA-ready security</li>
             </ul>
+            <p className="mb-3 mt-5 text-xs font-bold uppercase tracking-wider text-slate-500">Follow Us</p>
+            <ul className="space-y-2.5 text-sm">
+              <li><a href="https://web.facebook.com/shacomputecgh" target="_blank" rel="noopener noreferrer" className="transition hover:text-white">Facebook</a></li>
+              <li><a href="https://tiktok.com/@shacomputecgh" target="_blank" rel="noopener noreferrer" className="transition hover:text-white">TikTok</a></li>
+              <li><a href="https://www.youtube.com/@shacomputec" target="_blank" rel="noopener noreferrer" className="transition hover:text-white">YouTube</a></li>
+              <li><a href="https://whatsapp.com/channel/shacomputec" target="_blank" rel="noopener noreferrer" className="transition hover:text-white">WhatsApp</a></li>
+            </ul>
           </div>
         </div>
         <div className="border-t border-white/10">
@@ -131,7 +137,6 @@ export default function PortalLayout() {
           </div>
         </div>
       </footer>
-      <SocialMediaPopup />
     </div>
   );
 }

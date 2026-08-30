@@ -62,7 +62,10 @@ export default function Dashboard() {
     };
     load();
     const t = window.setInterval(load, 30_000);
-    return () => { alive = false; window.clearInterval(t); };
+    // Real-time: refresh immediately when any entity changes via SSE
+    const onEntityChanged = () => { alive = true; void load(); };
+    window.addEventListener('gihm:entity-changed', onEntityChanged);
+    return () => { alive = false; window.clearInterval(t); window.removeEventListener('gihm:entity-changed', onEntityChanged); };
   }, []);
 
   if (loading && !data) return <DashboardSkeleton />;

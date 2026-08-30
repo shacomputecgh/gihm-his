@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Solution>
+  <Folder Name="src">
+    <Project Name="SchoolManagement" Path="src/SchoolManagement/SchoolManagement.csproj" />
+    <Project Name="SchoolManagement.Setup" Path="src/SchoolManagement.Setup/SchoolManagement.Setup.csproj" />
+  </Folder>
+</Solution>

@@ -3,10 +3,19 @@ import { useConnection } from '../lib/connection';
 import { Badge, Button } from './ui';
 import { Icon } from './icons';
 import { fmtDateTime } from '../lib/format';
+import { getAppMode } from '../lib/appMode';
+
+const MODE_LABELS: Record<string, { label: string; color: string; icon: string }> = {
+  online:  { label: '🌐 Online',  color: 'text-g-green',  icon: 'wifi' },
+  offline: { label: '📴 Offline',  color: 'text-g-gold',   icon: 'wifiOff' },
+  mobile:  { label: '📱 Mobile Sync', color: 'text-blue-500', icon: 'wifi' },
+};
 
 export function SyncBadge() {
   const { online, serverHealthy, pending, syncing, lastSyncAt, sync, lastSyncResult } = useConnection();
   const [open, setOpen] = useState(false);
+  const appMode = getAppMode();
+  const modeInfo = MODE_LABELS[appMode] ?? MODE_LABELS.online;
 
   const offline = !online || serverHealthy === false;
   return (
@@ -25,6 +34,9 @@ export function SyncBadge() {
         )}
         <span className={offline ? 'text-g-red' : 'text-g-green'}>
           {syncing ? 'Syncing…' : offline ? 'Offline' : 'Connected'}
+        </span>
+        <span className={`ml-1 rounded px-1.5 py-0.5 text-[10px] font-bold ${modeInfo.color} bg-slate-100`}>
+          {modeInfo.label}
         </span>
         {pending > 0 && <Badge tone="gold">{pending} pending</Badge>}
       </button>

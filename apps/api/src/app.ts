@@ -52,6 +52,8 @@ import { registerReportRoutes } from './modules/reports/routes.js';
 import { registerIntegrationRoutes } from './modules/integrations/routes.js';
 import { registerAiRoutes } from './modules/ai/routes.js';
 import { registerSyncRoutes } from './modules/sync/routes.js';
+import { registerSseRoutes } from './modules/sync/sse.js';
+import { registerBroadcastHook } from './modules/sync/broadcastHook.js';
 import { registerHealthRoutes } from './modules/health.js';
 import { registerMetricsRoutes } from './modules/metrics.js';
 import { withEntityCapture } from './modules/edge/capture.js';
@@ -171,8 +173,12 @@ export async function buildApp(opts: { db?: PrismaClient; logger?: boolean } = {
     registerIntegrationRoutes(instance, db, guards, config.integrations);
     registerAiRoutes(instance, db, guards);
     registerSyncRoutes(instance, db, guards);
+    registerSseRoutes(instance, db, guards);
   };
   await app.register(api, { prefix: '/api/v1' });
+
+  // Auto-broadcast all direct writes to SSE subscribers (real-time sync)
+  registerBroadcastHook(app);
 
   return app;
 }

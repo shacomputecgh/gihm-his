@@ -28,6 +28,9 @@ export default function Appointments() {
 
   useEffect(() => {
     void load();
+    const onEntityChanged = () => void load();
+    window.addEventListener('gihm:entity-changed', onEntityChanged);
+    return () => window.removeEventListener('gihm:entity-changed', onEntityChanged);
   }, [load]);
 
   useEffect(() => {

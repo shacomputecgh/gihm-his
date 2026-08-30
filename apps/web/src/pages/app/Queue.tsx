@@ -34,7 +34,9 @@ export default function Queue() {
   useEffect(() => {
     void load();
     const t = window.setInterval(() => void load(), 15_000);
-    return () => window.clearInterval(t);
+    const onEntityChanged = () => void load();
+    window.addEventListener('gihm:entity-changed', onEntityChanged);
+    return () => { window.clearInterval(t); window.removeEventListener('gihm:entity-changed', onEntityChanged); };
   }, [load]);
 
   const prefix = DEP_TICKET_PREFIX[dep];

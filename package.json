@@ -2,7 +2,7 @@
   "name": "gihm-his",
   "version": "0.1.0",
   "private": true,
-  "description": "GIHM-HIS — Ghana Integrated Health Management & Hospital Information System (foundation prototype)",
+  "description": "GIHM-HIS — Ghana Integrated Health Management & Hospital Information System",
   "workspaces": [
     "apps/*"
   ],
@@ -22,7 +22,23 @@
     "load:k6": "node tools/k6/ensure.js",
     "typecheck": "npm run typecheck -w apps/api && npm run typecheck -w apps/web && npm run typecheck:e2e",
     "typecheck:e2e": "tsc --noEmit -p e2e/tsconfig.json",
-    "build": "npm run build -w apps/web"
+    "build": "npm run build -w apps/web",
+
+    "═══ Desktop (.NET 8 WPF) ═══": "",
+    "desktop:icon": "node scripts/generate-app-icon.mjs --platform desktop --output desktop/assets",
+    "desktop:publish": "dotnet publish desktop/dotnet/src/SchoolManagement/SchoolManagement.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o desktop/dotnet/publish/app",
+    "desktop:build": "node desktop/dotnet/build-release.mjs",
+    "desktop:build:ps": "powershell -ExecutionPolicy Bypass -File desktop/dotnet/build-release.ps1",
+
+    "═══ Mobile (Android) ═══": "",
+    "mobile:icon": "node scripts/generate-app-icon.mjs --platform mobile --output mobile",
+    "mobile:build": "cd mobile/android-native && JAVA_HOME='C:/jdk17' ANDROID_HOME='C:/android-sdk' ./gradlew assembleRelease",
+    "mobile:build:debug": "cd mobile/android-native && JAVA_HOME='C:/jdk17' ANDROID_HOME='C:/android-sdk' ./gradlew assembleDebug",
+    "mobile:install": "adb install mobile/releases/GIHM-HIS-0.1.0.apk",
+
+    "═══ Full Release ═══": "",
+    "release:all": "npm run desktop:build && npm run mobile:build",
+    "release:icon": "node scripts/generate-app-icon.mjs --platform all --output ."
   },
   "devDependencies": {
     "@playwright/test": "^1.62.1",

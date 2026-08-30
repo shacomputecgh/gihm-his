@@ -1,0 +1,69 @@
+{
+  "expo": {
+    "name": "GIHM-HIS",
+    "slug": "gihm-his",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#12203a"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.shacomputec.gihmhis",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSCameraUsageDescription": "GIHM-HIS needs camera access to scan patient IDs and capture health records.",
+        "NSFaceIDUsageDescription": "GIHM-HIS uses Face ID for secure authentication.",
+        "NSLocalNetworkUsageDescription": "GIHM-HIS uses local network to sync data with the hospital server."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#12203a"
+      },
+      "package": "com.shacomputec.gihmhis",
+      "versionCode": 1,
+      "permissions": [
+        "CAMERA",
+        "INTERNET",
+        "ACCESS_NETWORK_STATE",
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_EXTERNAL_STORAGE"
+      ],
+      "allowMixedContent": true,
+      "useNextNotificationsApi": true
+    },
+    "web": {
+      "favicon": "./assets/icon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      [
+        "expo-router",
+        {
+          "root": "./src"
+        }
+      ],
+      [
+        "expo-updates",
+        {
+          "codeSigning": true
+        }
+      ]
+    ],
+    "scheme": "gihm-his",
+    "extra": {
+      "apiUrl": "https://gihm.vercel.app",
+      "offlineCacheTtl": 86400,
+      "eas": {
+        "projectId": "YOUR_EAS_PROJECT_ID"
+      }
+    }
+  }
+}
