@@ -227,6 +227,10 @@ if (existsSync(payloadZip)) unlinkSync(payloadZip);
 log(7, 7, "Publishing auto-update manifest…");
 const publicDir = join(REPO_ROOT, "public", "desktop");
 mkdirSync(publicDir, { recursive: true });
+// The deployed manifest lives in the web app's public dir so it ships to Vercel;
+// root public/desktop/ stays as local staging for the big binaries.
+const deployedManifestDir = join(REPO_ROOT, "apps", "web", "public", "desktop");
+mkdirSync(deployedManifestDir, { recursive: true });
 
 const hash = sha256(installerExe);
 const artifactName = `${PRODUCT}-${VERSION}-Setup.exe`;
@@ -237,17 +241,21 @@ copyFileSync(zipPath, join(publicDir, zipName));
 const manifest = {
   version: VERSION,
   releaseDate: new Date().toISOString().replace(/\.\d+Z$/, "Z"),
-  url: `/desktop/${artifactName}`,
+  // Binaries are too large for Vercel's static asset limit (~100MB); they are
+  // published as GitHub Release assets. Keep these URLs in sync with the
+  // release tags when publishing.
+  url: `https://github.com/shacomputecgh/gihm-his/releases/download/v${VERSION}/${artifactName}`,
   sha256: hash,
   releaseNotes: "",
   artifacts: {
-    setup: `/desktop/${artifactName}`,
-    portable: `/desktop/${zipName}`,
+    setup: `https://github.com/shacomputecgh/gihm-his/releases/download/v${VERSION}/${artifactName}`,
+    portable: `https://github.com/shacomputecgh/gihm-his/releases/download/v${VERSION}/${zipName}`,
   },
 };
 
 writeFileSync(join(publicDir, "latest.json"), JSON.stringify(manifest, null, 2));
-console.log(`  ✓ Manifest: ${join(publicDir, "latest.json")}`);
+writeFileSync(join(deployedManifestDir, "latest.json"), JSON.stringify(manifest, null, 2));
+console.log(`  ✓ Manifest: ${join(deployedManifestDir, "latest.json")} (deployed) + ${join(publicDir, "latest.json")} (staging)`);
 console.log(`  ✓ SHA-256:  ${hash}`);
 
 // ── Summary ────────────────────────────────────────────────────
