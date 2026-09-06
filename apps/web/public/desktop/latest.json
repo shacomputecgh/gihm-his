@@ -1,11 +1,11 @@
 {
-  "version": "0.2.0",
-  "releaseDate": "2026-09-06T07:20:52Z",
-  "url": "https://github.com/shacomputecgh/gihm-his/releases/download/v0.2.0/GIHM-HIS-0.2.0-Setup.exe",
-  "sha256": "6714bc2687afcc14a34655eefa146a2d255cb475fd23dfc1a3f6aec303d4c29b",
-  "releaseNotes": "Bundles the WebView2 Fixed Runtime so the app works fully offline. Installer is now 592MB.",
+  "version": "0.2.1",
+  "releaseDate": "2026-09-06T07:35:23Z",
+  "url": "https://github.com/shacomputecgh/gihm-his/releases/download/v0.2.1/GIHM-HIS-0.2.1-Setup.exe",
+  "sha256": "68aa61cbb68c177377bb98c2dacb000a0a6d0789dbf02aa5eaf5395c68100bc6",
+  "releaseNotes": "",
   "artifacts": {
-    "setup": "https://github.com/shacomputecgh/gihm-his/releases/download/v0.2.0/GIHM-HIS-0.2.0-Setup.exe",
-    "portable": "https://github.com/shacomputecgh/gihm-his/releases/download/v0.2.0/GIHM-HIS-0.2.0-Portable.zip"
+    "setup": "https://github.com/shacomputecgh/gihm-his/releases/download/v0.2.1/GIHM-HIS-0.2.1-Setup.exe",
+    "portable": "https://github.com/shacomputecgh/gihm-his/releases/download/v0.2.1/GIHM-HIS-0.2.1-Portable.zip"
   }
 }

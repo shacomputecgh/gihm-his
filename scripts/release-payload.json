@@ -1,0 +1,7 @@
+{
+  "tag_name": "v0.2.1",
+  "name": "GIHM-HIS v0.2.1 Desktop (offline-ready)",
+  "body": "Desktop installer bundling the WebView2 Fixed Runtime for fully offline operation (592MB).\n\n- GIHM-HIS-0.2.1-Setup.exe - double-click installer (592MB)\n- GIHM-HIS-0.2.1-Portable.zip - unzip and run (524MB)\n\nSHA-256 of Setup.exe: 68aa61cbb68c177377bb98c2dacb000a0a6d0789dbf02aa5eaf5395c68100bc6",
+  "draft": false,
+  "prerelease": false
+}
