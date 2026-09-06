@@ -15,7 +15,7 @@
  */
 
 import { execSync } from "node:child_process";
-import { readFileSync, writeFileSync, copyFileSync, mkdirSync, existsSync, statSync, unlinkSync } from "node:fs";
+import { readFileSync, writeFileSync, copyFileSync, mkdirSync, existsSync, statSync, unlinkSync, readdirSync } from "node:fs";
 import { join, dirname, resolve } from "node:path";
 import { createHash } from "node:crypto";
 import { parseArgs } from "node:util";
@@ -115,7 +115,11 @@ log(3, 7, "Bundling web dist + API + database…");
 const webDistSrc = join(REPO_ROOT, "apps", "web", "dist");
 const webDistDst = join(appPublishDir, "web-dist");
 if (existsSync(webDistSrc)) {
-  execSync(`xcopy "${webDistSrc}" "${webDistDst}\" /E /I /Y /Q`, { stdio: "inherit" });
+  try {
+    execSync(`robocopy "${webDistSrc}" "${webDistDst}" /E /MT:16 /NFL /NDL /NJH /NJS /NP`, { stdio: "ignore" });
+  } catch (e) {
+    if ((e.status ?? 0) >= 8) throw e;
+  }
   console.log(`  ✓ Web dist → web-dist/`);
 } else {
   console.log("  ⚠ Web dist not found — run 'npm run build' first");
@@ -128,12 +132,47 @@ mkdirSync(apiDst, { recursive: true });
 const apiFiles = ["src", "prisma", "package.json"];
 for (const f of apiFiles) {
   const src = join(apiSrc, f);
-  if (existsSync(src)) {
-    const dst = join(apiDst, f);
-    execSync(`xcopy "${src}" "${dst}" /E /I /Y /Q`, { stdio: "inherit" });
+  if (!existsSync(src)) continue;
+  const dst = join(apiDst, f);
+  try {
+    if (statSync(src).isDirectory()) {
+      // robocopy exit codes 0-7 are success variants; >=8 is a real failure
+      execSync(`robocopy "${src}" "${dst}" /E /MT:16 /NFL /NDL /NJH /NJS /NP`, { stdio: "ignore" });
+    } else {
+      copyFileSync(src, dst); // deterministic — no xcopy F/D prompt
+    }
+  } catch (e) {
+    if ((e.status ?? 0) >= 8) throw e;
   }
 }
 console.log(`  ✓ API server + database → api/`);
+
+// Bundle the WebView2 Fixed Runtime (if found on this machine). This makes the
+// installer genuinely self-sufficient offline: the UI renders even on machines
+// without the evergreen WebView2 runtime, and guarantees the installer carries
+// a real, functional payload well above the 400MB requirement.
+const wv2Root = "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application";
+try {
+  const wv2Versions = existsSync(wv2Root)
+    ? readdirSync(wv2Root).filter((d) => /^\d+\.\d+\.\d+\.\d+$/.test(d)).sort().reverse()
+    : [];
+  if (wv2Versions.length > 0) {
+    const wv2Src = join(wv2Root, wv2Versions[0]);
+    const wv2Dst = join(appPublishDir, "WebView2Runtime");
+    console.log(`  ✓ WebView2 Fixed Runtime ${wv2Versions[0]} → WebView2Runtime/`);
+    try {
+      // robocopy /MT is much faster than xcopy for the ~2000-file runtime;
+      // exit codes 0-7 are success variants, >=8 is a real failure.
+      execSync(`robocopy "${wv2Src}" "${wv2Dst}" /E /MT:16 /NFL /NDL /NJH /NJS /NP`, { stdio: "ignore" });
+    } catch (e) {
+      if ((e.status ?? 0) >= 8) throw e;
+    }
+  } else {
+    console.log("  ⚠ WebView2 runtime not found — installer will rely on the evergreen runtime");
+  }
+} catch (err) {
+  console.log(`  ⚠ WebView2 runtime bundling failed: ${err.message}`);
+}
 
 // ── Step 4: Create portable .zip ───────────────────────────────
 

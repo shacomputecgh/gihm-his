@@ -57,8 +57,23 @@ public partial class SystemWindow : Window
     {
         try
         {
-            var env = await CoreWebView2Environment.CreateAsync(null, OfflineCachePath,
-                new CoreWebView2EnvironmentOptions());
+            // Prefer the bundled fixed WebView2 runtime (installed to WebView2Runtime\
+            // by build-release.mjs) so offline machines without the evergreen
+            // runtime still render the UI; fall back to the installed runtime.
+            var fixedRuntime = Path.Combine(ExeDir, "WebView2Runtime");
+            CoreWebView2Environment env;
+            if (Directory.Exists(Path.Combine(fixedRuntime, "msedgewebview2.exe")) ||
+                File.Exists(Path.Combine(fixedRuntime, "msedgewebview2.exe")))
+            {
+                env = await CoreWebView2Environment.CreateAsync(fixedRuntime, OfflineCachePath,
+                    new CoreWebView2EnvironmentOptions());
+                Log($"Using bundled fixed WebView2 runtime: {fixedRuntime}");
+            }
+            else
+            {
+                env = await CoreWebView2Environment.CreateAsync(null, OfflineCachePath,
+                    new CoreWebView2EnvironmentOptions());
+            }
             await WebView.EnsureCoreWebView2Async(env);
 
             // Map bundled web-dist as a virtual host so absolute paths like /assets/... work
