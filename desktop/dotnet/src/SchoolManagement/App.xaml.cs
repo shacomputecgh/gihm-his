@@ -10,12 +10,16 @@ namespace SchoolManagement
         {
             base.OnStartup(e);
 
-            // Non-blocking update check against the published manifest
-            // (points at GitHub Releases; see build-release.mjs).
+            // Non-blocking update check against the published manifest.
+            // Primary: the Vercel deployment; fallback: the manifest attached
+            // to the GitHub Release itself (survives domain changes).
             try
             {
-                _ = AutoUpdater.CheckForUpdateAsync(
-                    "https://dist-chi-one-cef2ntnu3d.vercel.app/desktop/latest.json");
+                _ = AutoUpdater.CheckForUpdateWithFallbackAsync(new[]
+                {
+                    "https://dist-chi-one-cef2ntnu3d.vercel.app/desktop/latest.json",
+                    "https://github.com/shacomputecgh/gihm-his/releases/latest/download/latest.json",
+                });
             }
             catch { /* update checks must never block startup */ }
         }

@@ -16,6 +16,25 @@ public sealed class AutoUpdater
 {
     private static readonly HttpClient Http = new();
 
+    /// <summary>
+    /// Try each manifest URL in order; first one that fetches and parses wins.
+    /// </summary>
+    public static async Task CheckForUpdateWithFallbackAsync(string[] manifestUrls)
+    {
+        foreach (var url in manifestUrls)
+        {
+            try
+            {
+                await CheckForUpdateAsync(url);
+                return;
+            }
+            catch (HttpRequestException)
+            {
+                // try next source
+            }
+        }
+    }
+
     public static async Task CheckForUpdateAsync(string manifestUrl)
     {
         try
