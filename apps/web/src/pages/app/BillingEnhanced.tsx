@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Badge, Card } from '../../components/ui';
+import { Badge, Card, useToast } from '../../components/ui';
 
 interface Invoice { id: string; patientName: string; mrn: string; ward: string; date: string; items: { description: string; quantity: number; unitPrice: number; total: number; }[]; subtotal: number; discount: number; total: number; paid: number; balance: number; paymentMethod: 'Cash' | 'NHIS' | 'Insurance' | 'Credit' | 'Mixed'; status: 'Unpaid' | 'Partially Paid' | 'Paid' | 'Overpaid' | 'Written Off'; insuranceClaim?: string; }
 

@@ -21,10 +21,16 @@ internal static class Program
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), AppName);
     private static readonly string UninstallExe = "GIHM-HIS-Uninstall.exe";
     private static readonly string RegistryKey = $@"Software\Microsoft\Windows\CurrentVersion\Uninstall\{AppName}";
-
     private static readonly string LogPath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "GIHM-HIS-setup.log");
+
+    private static string? GetSelfPath()
+    {
+        return Environment.ProcessPath
+            ?? Process.GetCurrentProcess().MainModule?.FileName
+            ?? System.Reflection.Assembly.GetExecutingAssembly().Location;
+    }
 
     private static void Log(string msg)
     {
@@ -34,99 +40,155 @@ internal static class Program
     [STAThread]
     static void Main()
     {
-        // Check if this is running as uninstaller
         var args = Environment.GetCommandLineArgs();
+
+        // ── UNINSTALL MODE ─────────────────────────────────────
+        // args[0] = exe path, args[1] = "--uninstall"
         if (args.Length > 1 && args[1] == "--uninstall")
         {
             RunUninstaller();
             return;
         }
 
+        // ── INSTALL MODE ───────────────────────────────────────
         try { File.Delete(LogPath); } catch { }
         Log("Installer starting");
 
         var app = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
 
-        // Build UI programmatically
-        var progressBar = new ProgressBar
+        // ── Standard Windows Installer UI ──
+        // Blue header bar
+        var headerBar = new DockPanel
         {
-            Height = 10, Minimum = 0, Maximum = 100, Value = 0,
-            Foreground = new SolidColorBrush(Color.FromRgb(0xDC, 0x26, 0x26)),
-            Background = new SolidColorBrush(Color.FromRgb(0x1E, 0x30, 0x50)),
-            Margin = new Thickness(0, 0, 0, 8),
+            Height = 60,
+            Background = new LinearGradientBrush(
+                Color.FromRgb(0x00, 0x52, 0x9A),
+                Color.FromRgb(0x00, 0x3D, 0x7A),
+                0),
+            Margin = new Thickness(0, 0, 0, 0),
         };
-        var fileLabel = new TextBlock
+        var headerText = new StackPanel
         {
-            Text = "", Foreground = new SolidColorBrush(Color.FromRgb(0xAA, 0xBB, 0xCC)),
-            FontSize = 10, TextWrapping = TextWrapping.Wrap,
-            Margin = new Thickness(0, 0, 0, 4), MaxHeight = 40,
+            VerticalAlignment = VerticalAlignment.Center,
+            Margin = new Thickness(20, 0, 0, 0),
         };
-        var pathLabel = new TextBlock
-        {
-            Text = "Preparing…", Foreground = new SolidColorBrush(Color.FromRgb(0x66, 0x77, 0x88)),
-            FontSize = 11, Margin = new Thickness(0, 0, 0, 8),
-        };
-        var statusText = new TextBlock
-        {
-            Text = "Starting installation…", Foreground = new SolidColorBrush(Color.FromRgb(0xCC, 0xCC, 0xCC)),
-            FontSize = 12,
-        };
-        var progressLabel = new TextBlock
-        {
-            Text = "0%", Foreground = new SolidColorBrush(Color.FromRgb(0xDC, 0x26, 0x26)),
-            FontSize = 11, FontWeight = FontWeights.Bold,
-            HorizontalAlignment = HorizontalAlignment.Right,
-        };
-
-        // Header with logo + developer name
-        var header = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 16) };
         try
         {
             var logoPath = Path.Combine(AppContext.BaseDirectory, "assets", "app-icon.png");
             if (File.Exists(logoPath))
             {
                 var bitmap = new System.Windows.Media.Imaging.BitmapImage(new Uri(logoPath));
-                header.Children.Add(new Image { Source = bitmap, Width = 40, Height = 40, Margin = new Thickness(0, 0, 12, 0) });
+                var img = new Image { Source = bitmap, Width = 36, Height = 36, Margin = new Thickness(0, 0, 12, 0) };
+                headerBar.Children.Add(img);
+                DockPanel.SetDock(img, Dock.Left);
             }
         }
         catch { }
-        header.Children.Add(new StackPanel
+        headerText.Children.Add(new TextBlock
         {
-            Children =
-            {
-                new TextBlock { Text = AppName, Foreground = Brushes.White, FontSize = 20, FontWeight = FontWeights.Bold },
-                new TextBlock { Text = $"by {Developer} — Ghana Integrated Health Management System",
-                    Foreground = new SolidColorBrush(Color.FromRgb(0x88, 0x99, 0xAA)), FontSize = 11 },
-            }
+            Text = $"{AppName} Setup",
+            Foreground = Brushes.White, FontSize = 18, FontWeight = FontWeights.SemiBold,
         });
+        headerText.Children.Add(new TextBlock
+        {
+            Text = $"Version {Version} — by {Developer}",
+            Foreground = new SolidColorBrush(Color.FromRgb(0xCC, 0xDD, 0xEE)),
+            FontSize = 11,
+        });
+        headerBar.Children.Add(headerText);
 
-        // Layout
-        var grid = new Grid { Margin = new Thickness(30) };
-        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });  // header
-        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });  // path
-        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });  // progress bar
-        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });  // file label
-        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });  // status + %
-        Grid.SetRow(header, 0); grid.Children.Add(header);
-        Grid.SetRow(pathLabel, 1); grid.Children.Add(pathLabel);
-        Grid.SetRow(progressBar, 2); grid.Children.Add(progressBar);
-        Grid.SetRow(fileLabel, 3); grid.Children.Add(fileLabel);
+        // White content area
+        var contentPanel = new StackPanel { Margin = new Thickness(30, 20, 30, 20) };
 
-        var statusRow = new Grid();
-        statusRow.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        statusRow.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        Grid.SetColumn(statusText, 0); statusRow.Children.Add(statusText);
-        Grid.SetColumn(progressLabel, 1); statusRow.Children.Add(progressLabel);
-        Grid.SetRow(statusRow, 4); grid.Children.Add(statusRow);
+        var titleText = new TextBlock
+        {
+            Text = "Installing…",
+            Foreground = new SolidColorBrush(Color.FromRgb(0x1A, 0x1A, 0x2E)),
+            FontSize = 16, FontWeight = FontWeights.SemiBold,
+            Margin = new Thickness(0, 0, 0, 6),
+        };
+        contentPanel.Children.Add(titleText);
+
+        var statusText = new TextBlock
+        {
+            Text = "Please wait while the setup installs GIHM-HIS on your computer.",
+            Foreground = new SolidColorBrush(Color.FromRgb(0x55, 0x55, 0x55)),
+            FontSize = 12,
+            Margin = new Thickness(0, 0, 0, 16),
+        };
+        contentPanel.Children.Add(statusText);
+
+        // Install location
+        var pathLabel = new TextBlock
+        {
+            Text = "Install to: C:\\GIHM-HIS",
+            Foreground = new SolidColorBrush(Color.FromRgb(0x66, 0x66, 0x66)),
+            FontSize = 11, Margin = new Thickness(0, 0, 0, 12),
+        };
+        contentPanel.Children.Add(pathLabel);
+
+        // Green progress bar
+        var progressBar = new ProgressBar
+        {
+            Height = 22, Minimum = 0, Maximum = 100, Value = 0,
+            Foreground = new SolidColorBrush(Color.FromRgb(0x0B, 0x8A, 0x0B)),
+            Background = new SolidColorBrush(Color.FromRgb(0xE0, 0xE0, 0xE0)),
+            BorderBrush = new SolidColorBrush(Color.FromRgb(0xCC, 0xCC, 0xCC)),
+            BorderThickness = new Thickness(1),
+            Margin = new Thickness(0, 0, 0, 4),
+        };
+        contentPanel.Children.Add(progressBar);
+
+        // Status row: file info + percentage
+        var fileLabel = new TextBlock
+        {
+            Text = "", Foreground = new SolidColorBrush(Color.FromRgb(0x88, 0x88, 0x88)),
+            FontSize = 10, TextWrapping = TextWrapping.Wrap,
+            Margin = new Thickness(0, 0, 0, 4),
+        };
+        contentPanel.Children.Add(fileLabel);
+
+        var progressLabel = new TextBlock
+        {
+            Text = "0% complete",
+            Foreground = new SolidColorBrush(Color.FromRgb(0x0B, 0x8A, 0x0B)),
+            FontSize = 11, FontWeight = FontWeights.SemiBold,
+            HorizontalAlignment = HorizontalAlignment.Right,
+        };
+        contentPanel.Children.Add(progressLabel);
+
+        // Separator
+        var sep = new Border
+        {
+            Height = 1, Background = new SolidColorBrush(Color.FromRgb(0xDD, 0xDD, 0xDD)),
+            Margin = new Thickness(0, 10, 0, 0),
+        };
+        contentPanel.Children.Add(sep);
+
+        // Footer
+        var footer = new TextBlock
+        {
+            Text = $"© {DateTime.Now.Year} {Developer} — Hard Works Never Fail",
+            Foreground = new SolidColorBrush(Color.FromRgb(0xAA, 0xAA, 0xAA)),
+            FontSize = 10, Margin = new Thickness(0, 8, 0, 0),
+            HorizontalAlignment = HorizontalAlignment.Center,
+        };
+        contentPanel.Children.Add(footer);
+
+        // Main layout
+        var mainPanel = new DockPanel();
+        DockPanel.SetDock(headerBar, Dock.Top);
+        mainPanel.Children.Add(headerBar);
+        mainPanel.Children.Add(contentPanel);
 
         var window = new Window
         {
-            Title = $"{AppName} Installer — by {Developer}",
-            Width = 520, Height = 280,
+            Title = $"{AppName} Setup",
+            Width = 520, Height = 320,
             WindowStartupLocation = WindowStartupLocation.CenterScreen,
             WindowStyle = WindowStyle.SingleBorderWindow, ResizeMode = ResizeMode.NoResize,
-            Background = new SolidColorBrush(Color.FromRgb(0x12, 0x20, 0x3a)),
-            Content = grid,
+            Background = Brushes.White,
+            Content = mainPanel,
         };
 
         window.ContentRendered += async (_, _) =>
@@ -151,8 +213,12 @@ internal static class Program
                 Directory.CreateDirectory(installDir);
                 await Task.Delay(300);
 
+                // Kill any running instance before overwriting
+                KillRunningInstance(installDir);
+
                 // Extract ZIP payload with per-file progress
-                statusText.Text = "Extracting application files…";
+                titleText.Text = "Extracting files…";
+                statusText.Text = "Please wait while the setup extracts application files.";
                 progressBar.Value = 10;
                 await Task.Delay(100);
 
@@ -180,7 +246,7 @@ internal static class Program
                     {
                         double pct = (double)fileCount / totalFiles * 80;
                         progressBar.Value = 10 + pct;
-                        progressLabel.Text = $"{(int)(10 + pct)}%";
+                        progressLabel.Text = $"{(int)(10 + pct)}% complete";
                         fileLabel.Text = $"[{fileCount}/{totalFiles}] {currentFileName}";
                     }
                     else
@@ -191,13 +257,14 @@ internal static class Program
                 }
                 await extractTask;
                 progressBar.Value = 90;
-                progressLabel.Text = "90%";
+                progressLabel.Text = "90% complete";
                 Log($"Extraction complete: {fileCount} files");
                 fileLabel.Text = $"Extracted {fileCount} files";
 
-                // Create uninstall.exe (copy of self with --uninstall flag)
-                statusText.Text = "Creating uninstaller…";
-                fileLabel.Text = "Setting up uninstaller for Control Panel…";
+                // Create standalone uninstaller EXE
+                titleText.Text = "Finalizing…";
+                statusText.Text = "Setting up uninstaller and registering in Control Panel.";
+                fileLabel.Text = "";
                 await Task.Delay(100);
                 CreateUninstallExecutable(installDir);
                 Log("Uninstall.exe created");
@@ -207,17 +274,17 @@ internal static class Program
                 Log("Registered in Control Panel");
 
                 // Create shortcuts with developer name
-                statusText.Text = "Creating shortcuts…";
-                fileLabel.Text = "Creating Start Menu + Desktop shortcuts…";
+                statusText.Text = "Creating Start Menu and Desktop shortcuts.";
                 await Task.Delay(200);
                 CreateStartMenuShortcut(installDir);
                 CreateDesktopShortcut(installDir);
                 Log("Shortcuts created");
                 progressBar.Value = 95;
-                progressLabel.Text = "95%";
+                progressLabel.Text = "95% complete";
 
                 // Launch
-                statusText.Text = $"Launching {AppName}…";
+                titleText.Text = "Launching…";
+                statusText.Text = $"{AppName} is starting. You may close this window.";
                 fileLabel.Text = "";
                 progressBar.Value = 98;
                 await Task.Delay(300);
@@ -230,8 +297,9 @@ internal static class Program
                 }
 
                 progressBar.Value = 100;
-                progressLabel.Text = "100%";
-                statusText.Text = $"✅ Installation complete! {AppName} by {Developer}";
+                progressLabel.Text = "100% complete";
+                titleText.Text = "Installation Complete!";
+                statusText.Text = $"{AppName} has been successfully installed.";
                 fileLabel.Text = $"{fileCount} files installed to {installDir}";
                 Log("DONE");
                 await Task.Delay(2000);
@@ -255,63 +323,191 @@ internal static class Program
 
     private static void RunUninstaller()
     {
+        Log("=== UNINSTALLER STARTING ===");
+
+        // When called from Control Panel (--uninstall), skip confirmation dialog
+        var args = Environment.GetCommandLineArgs();
+        bool fromControlPanel = args.Length > 1 && args[1] == "--uninstall";
+
+        if (!fromControlPanel)
+        {
+            var result = MessageBox.Show(
+                $"Are you sure you want to uninstall {AppName}?\n\n" +
+                $"This will remove the application and all its data from your computer.\n\n" +
+                $"Click OK to uninstall, or Cancel to keep it installed.",
+                $"Uninstall {AppName}",
+                MessageBoxButton.OKCancel, MessageBoxImage.Question);
+
+            if (result != MessageBoxResult.OK)
+            {
+                Log("Uninstall cancelled by user");
+                return;
+            }
+        }
+
         var app = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
 
-        var result = MessageBox.Show(
-            $"Are you sure you want to uninstall {AppName}?\n\n" +
-            $"This will remove the application and all its data from your computer.\n\n" +
-            $"Click OK to uninstall, or Cancel to keep it installed.",
-            $"Uninstall {AppName}",
-            MessageBoxButton.OKCancel, MessageBoxImage.Question);
+        // ── Standard Windows Uninstall UI ──
+        var headerBar = new DockPanel
+        {
+            Height = 60,
+            Background = new LinearGradientBrush(
+                Color.FromRgb(0xA0, 0x20, 0x20),
+                Color.FromRgb(0x80, 0x15, 0x15),
+                0),
+        };
+        var headerText2 = new StackPanel
+        {
+            VerticalAlignment = VerticalAlignment.Center,
+            Margin = new Thickness(20, 0, 0, 0),
+        };
+        headerText2.Children.Add(new TextBlock
+        {
+            Text = $"Uninstall {AppName}",
+            Foreground = Brushes.White, FontSize = 18, FontWeight = FontWeights.SemiBold,
+        });
+        headerText2.Children.Add(new TextBlock
+        {
+            Text = "Remove application from your computer",
+            Foreground = new SolidColorBrush(Color.FromRgb(0xFF, 0xCC, 0xCC)),
+            FontSize = 11,
+        });
+        headerBar.Children.Add(headerText2);
 
-        if (result != MessageBoxResult.OK)
-            return;
+        var content2 = new StackPanel { Margin = new Thickness(30, 20, 30, 20) };
+
+        var titleText2 = new TextBlock
+        {
+            Text = "Removing…",
+            Foreground = new SolidColorBrush(Color.FromRgb(0x1A, 0x1A, 0x2E)),
+            FontSize = 16, FontWeight = FontWeights.SemiBold,
+            Margin = new Thickness(0, 0, 0, 6),
+        };
+        content2.Children.Add(titleText2);
 
         var statusText = new TextBlock
         {
-            Text = "Uninstalling…", Foreground = Brushes.White, FontSize = 14,
-            HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center,
+            Text = "Please wait while GIHM-HIS is being removed from your computer.",
+            Foreground = new SolidColorBrush(Color.FromRgb(0x55, 0x55, 0x55)),
+            FontSize = 12,
+            Margin = new Thickness(0, 0, 0, 16),
         };
+        content2.Children.Add(statusText);
+
+        var progressBar2 = new ProgressBar
+        {
+            Height = 22, Minimum = 0, Maximum = 100, Value = 0,
+            Foreground = new SolidColorBrush(Color.FromRgb(0xC0, 0x30, 0x30)),
+            Background = new SolidColorBrush(Color.FromRgb(0xE0, 0xE0, 0xE0)),
+            BorderBrush = new SolidColorBrush(Color.FromRgb(0xCC, 0xCC, 0xCC)),
+            BorderThickness = new Thickness(1),
+            Margin = new Thickness(0, 0, 0, 4),
+        };
+        content2.Children.Add(progressBar2);
+
+        var progressLabel2 = new TextBlock
+        {
+            Text = "0% complete",
+            Foreground = new SolidColorBrush(Color.FromRgb(0xC0, 0x30, 0x30)),
+            FontSize = 11, FontWeight = FontWeights.SemiBold,
+            HorizontalAlignment = HorizontalAlignment.Right,
+        };
+        content2.Children.Add(progressLabel2);
+
+        var sep2 = new Border
+        {
+            Height = 1, Background = new SolidColorBrush(Color.FromRgb(0xDD, 0xDD, 0xDD)),
+            Margin = new Thickness(0, 10, 0, 0),
+        };
+        content2.Children.Add(sep2);
+
+        var footer2 = new TextBlock
+        {
+            Text = $"© {DateTime.Now.Year} {Developer} — Hard Works Never Fail",
+            Foreground = new SolidColorBrush(Color.FromRgb(0xAA, 0xAA, 0xAA)),
+            FontSize = 10, Margin = new Thickness(0, 8, 0, 0),
+            HorizontalAlignment = HorizontalAlignment.Center,
+        };
+        content2.Children.Add(footer2);
+
+        var mainPanel2 = new DockPanel();
+        DockPanel.SetDock(headerBar, Dock.Top);
+        mainPanel2.Children.Add(headerBar);
+        mainPanel2.Children.Add(content2);
 
         var window = new Window
         {
-            Title = $"Uninstalling {AppName}",
-            Width = 400, Height = 150,
+            Title = $"Uninstall {AppName}",
+            Width = 480, Height = 300,
             WindowStartupLocation = WindowStartupLocation.CenterScreen,
             WindowStyle = WindowStyle.SingleBorderWindow, ResizeMode = ResizeMode.NoResize,
-            Background = new SolidColorBrush(Color.FromRgb(0x12, 0x20, 0x3a)),
-            Content = statusText,
+            Background = Brushes.White,
+            Content = mainPanel2,
         };
 
         window.ContentRendered += async (_, _) =>
         {
             try
             {
-                // 1. Remove shortcuts
+                Log("Step 0: Killing running instances");
+                titleText2.Text = "Stopping application…";
+                statusText.Text = "Closing any running instances of GIHM-HIS.";
+                KillRunningInstances();
+                progressBar2.Value = 10; progressLabel2.Text = "10% complete";
+                await Task.Delay(500);
+
+                Log("Step 1: Removing shortcuts");
+                titleText2.Text = "Removing shortcuts…";
+                statusText.Text = "Removing Start Menu and Desktop shortcuts.";
                 RemoveShortcuts();
+                progressBar2.Value = 30; progressLabel2.Text = "30% complete";
+                await Task.Delay(200);
 
-                // 2. Remove registry keys
+                Log("Step 2: Removing registry entries");
+                titleText2.Text = "Removing registry entries…";
+                statusText.Text = "Unregistering from Control Panel.";
                 RemoveControlPanelEntry();
+                progressBar2.Value = 50; progressLabel2.Text = "50% complete";
+                await Task.Delay(200);
 
-                // 3. Remove application data
+                Log("Step 3: Removing application data");
+                titleText2.Text = "Removing application data…";
+                statusText.Text = "Cleaning cached data and settings.";
                 var appData = Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), AppName);
                 if (Directory.Exists(appData))
                 {
-                    try { Directory.Delete(appData, true); } catch { }
+                    try { Directory.Delete(appData, true); } catch (Exception ex)
+                    {
+                        Log($"AppData removal error: {ex.Message}");
+                    }
                 }
+                progressBar2.Value = 60; progressLabel2.Text = "60% complete";
+                await Task.Delay(200);
 
-                statusText.Text = "Removing application files…";
-                await Task.Delay(500);
+                Log("Step 4: Removing application files");
+                titleText2.Text = "Removing application files…";
+                statusText.Text = "Deleting program files from install directory.";
+                progressBar2.Value = 70; progressLabel2.Text = "70% complete";
 
-                // 4. Remove install directory (skip self)
-                var installDir = Path.GetDirectoryName(Environment.ProcessPath);
-                if (installDir != null && Directory.Exists(installDir))
+                // Find install dir from registry or fallback
+                var installDir = PrimaryDir;
+                try
                 {
-                    // Delete everything except ourselves
+                    using var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(RegistryKey);
+                    var loc = key?.GetValue("InstallLocation") as string;
+                    if (!string.IsNullOrEmpty(loc) && Directory.Exists(loc))
+                        installDir = loc;
+                }
+                catch { }
+
+                if (Directory.Exists(installDir))
+                {
                     foreach (var file in Directory.GetFiles(installDir))
                     {
-                        if (Path.GetFileName(file) == UninstallExe) continue;
+                        var fn = Path.GetFileName(file);
+                        // Skip the uninstaller itself — we delete it via batch later
+                        if (fn == UninstallExe) continue;
                         try { File.Delete(file); } catch { }
                     }
                     foreach (var dir in Directory.GetDirectories(installDir))
@@ -320,31 +516,56 @@ internal static class Program
                     }
                 }
 
-                statusText.Text = "✅ Uninstall complete!";
-                await Task.Delay(1000);
+                progressBar2.Value = 90; progressLabel2.Text = "90% complete";
+                await Task.Delay(500);
 
-                // Delete ourselves last
-                try
+                titleText2.Text = "Uninstall Complete!";
+                statusText.Text = $"{AppName} has been removed from your computer.";
+                progressBar2.Value = 100; progressLabel2.Text = "100% complete";
+                Log("Uninstall complete — scheduling self-delete");
+                await Task.Delay(1500);
+
+                // Self-delete: write a batch file that waits, deletes the uninstaller, then deletes itself
+                var selfPath = GetSelfPath();
+                if (selfPath != null && File.Exists(selfPath))
                 {
-                    var self = Environment.ProcessPath;
-                    if (self != null)
+                    var batchPath = Path.Combine(
+                        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                        "GIHM-HIS-uninstall-selfdelete.bat");
+
+                    var batchContent = new StringBuilder();
+                    batchContent.AppendLine("@echo off");
+                    batchContent.AppendLine("timeout /t 2 /nobreak >nul");
+                    batchContent.AppendLine($"del /f /q \"{selfPath}\"");
+                    batchContent.AppendLine($"if exist \"{selfPath}\" goto :retry");
+                    batchContent.AppendLine($"rmdir /q \"{Path.GetDirectoryName(selfPath)}\" 2>nul");
+                    batchContent.AppendLine("del /f /q \"%~f0\"");
+                    batchContent.AppendLine("exit");
+                    batchContent.AppendLine(":retry");
+                    batchContent.AppendLine("timeout /t 3 /nobreak >nul");
+                    batchContent.AppendLine($"del /f /q \"{selfPath}\"");
+                    batchContent.AppendLine("del /f /q \"%~f0\"");
+
+                    File.WriteAllText(batchPath, batchContent.ToString());
+
+                    var psi = new ProcessStartInfo("cmd.exe",
+                        $"/c \"{batchPath}\"")
                     {
-                        // Schedule self-deletion via cmd
-                        var psi = new ProcessStartInfo("cmd.exe",
-                            $"/c timeout /t 2 /nobreak >nul & del /f /q \"{self}\" & rmdir /q \"{installDir}\"");
-                        psi.WindowStyle = ProcessWindowStyle.Hidden;
-                        psi.CreateNoWindow = true;
-                        Process.Start(psi);
-                    }
+                        WindowStyle = ProcessWindowStyle.Hidden,
+                        CreateNoWindow = true
+                    };
+                    Process.Start(psi);
                 }
-                catch { }
 
                 window.Close();
                 app.Shutdown();
             }
             catch (Exception ex)
             {
-                statusText.Text = $"❌ Error: {ex.Message}";
+                Log($"UNINSTALL ERROR: {ex}");
+                titleText2.Text = "Error";
+                statusText.Text = $"{ex.Message}";
+                progressBar2.Value = 0; progressLabel2.Text = "";
                 await Task.Delay(3000);
                 window.Close();
                 app.Shutdown();
@@ -354,10 +575,48 @@ internal static class Program
         app.Run(window);
     }
 
+    private static void KillRunningInstances()
+    {
+        try
+        {
+            var exeName = Path.GetFileNameWithoutExtension(AppExe);
+            foreach (var proc in Process.GetProcessesByName(exeName))
+            {
+                try { proc.Kill(); proc.WaitForExit(3000); } catch { }
+            }
+            // Also try killing by uninstaller exe name
+            var uninstallName = Path.GetFileNameWithoutExtension(UninstallExe);
+            // Don't kill ourselves here — self-delete handles that
+        }
+        catch { }
+    }
+
+    private static void KillRunningInstance(string installDir)
+    {
+        try
+        {
+            var exeName = Path.GetFileNameWithoutExtension(AppExe);
+            foreach (var proc in Process.GetProcessesByName(exeName))
+            {
+                try
+                {
+                    var procPath = proc.MainModule?.FileName;
+                    if (procPath != null && procPath.StartsWith(installDir, StringComparison.OrdinalIgnoreCase))
+                    {
+                        Log($"Killing existing process: {proc.Id}");
+                        proc.Kill();
+                        proc.WaitForExit(5000);
+                    }
+                }
+                catch { }
+            }
+        }
+        catch { }
+    }
+
     private static void CreateUninstallExecutable(string installDir)
     {
-        // Copy the installer exe as the uninstaller
-        var selfPath = Environment.ProcessPath;
+        var selfPath = GetSelfPath();
         if (selfPath == null) return;
 
         var uninstallPath = Path.Combine(installDir, UninstallExe);
@@ -369,7 +628,6 @@ internal static class Program
     {
         try
         {
-            // Use HKCU (no admin required)
             using var key = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(RegistryKey);
             if (key != null)
             {
@@ -377,16 +635,18 @@ internal static class Program
                 key.SetValue("DisplayVersion", Version);
                 key.SetValue("Publisher", Developer);
                 key.SetValue("InstallLocation", installDir);
-                key.SetValue("UninstallString", $"\"{Path.Combine(installDir, UninstallExe)}\"");
-                key.SetValue("QuietUninstallString", $"\"{Path.Combine(installDir, UninstallExe)}\" --uninstall");
+                // KEY FIX: UninstallString MUST include --uninstall flag
+                key.SetValue("UninstallString",
+                    $"\"{Path.Combine(installDir, UninstallExe)}\" --uninstall");
+                key.SetValue("QuietUninstallString",
+                    $"\"{Path.Combine(installDir, UninstallExe)}\" --uninstall");
                 key.SetValue("InstallDate", DateTime.Now.ToString("yyyyMMdd"));
-                key.SetValue("EstimatedSize", 140000); // KB — ~140MB
+                key.SetValue("EstimatedSize", 140000);
                 key.SetValue("NoModify", 1);
                 key.SetValue("NoRepair", 1);
                 key.SetValue("URLInfoAbout", "https://gihm.vercel.app");
                 key.SetValue("URLUpdateInfo", "https://gihm.vercel.app");
 
-                // Set icon
                 var iconPath = Path.Combine(installDir, "assets", "icon.ico");
                 if (File.Exists(iconPath))
                     key.SetValue("DisplayIcon", iconPath);
@@ -417,10 +677,18 @@ internal static class Program
     {
         try
         {
-            // Desktop shortcut
-            var desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-            var desktopShortcut = Path.Combine(desktop, $"{AppName} by {Developer}.lnk");
-            if (File.Exists(desktopShortcut)) File.Delete(desktopShortcut);
+            // Desktop shortcuts — remove from both DesktopDirectory and classic Desktop
+            var desktopDirs = new[]
+            {
+                Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Desktop"),
+            };
+            foreach (var desktop in desktopDirs)
+            {
+                if (string.IsNullOrEmpty(desktop)) continue;
+                var shortcut = Path.Combine(desktop, $"{AppName} by {Developer}.lnk");
+                try { if (File.Exists(shortcut)) File.Delete(shortcut); } catch { }
+            }
 
             // Start Menu shortcuts
             var startMenu = Path.Combine(
@@ -442,8 +710,7 @@ internal static class Program
 
     private static void ExtractZipPayload(string targetDir, Action<string, int, int, long, long> onProgress)
     {
-        var exePath = Environment.ProcessPath
-            ?? Process.GetCurrentProcess().MainModule?.FileName
+        var exePath = GetSelfPath()
             ?? throw new InvalidOperationException("Cannot determine installer path.");
         Log($"ExtractZipPayload: exePath={exePath}, size={new FileInfo(exePath).Length}");
 
@@ -516,10 +783,21 @@ internal static class Program
 
     private static void CreateDesktopShortcut(string installDir)
     {
-        var desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-        CreateLnkShortcut(Path.Combine(desktop, $"{AppName} by {Developer}.lnk"),
-            Path.Combine(installDir, AppExe),
-            $"{AppName} — by {Developer}");
+        // Place shortcut in both DesktopDirectory and classic Desktop
+        var dirs = new System.Collections.Generic.HashSet<string>();
+        dirs.Add(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory));
+        dirs.Add(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Desktop"));
+        foreach (var desktop in dirs)
+        {
+            if (string.IsNullOrEmpty(desktop)) continue;
+            try
+            {
+                CreateLnkShortcut(Path.Combine(desktop, $"{AppName} by {Developer}.lnk"),
+                    Path.Combine(installDir, AppExe),
+                    $"{AppName} — by {Developer}");
+            }
+            catch { }
+        }
     }
 
     private static void CreateLnkShortcut(string shortcutPath, string targetPath, string description)

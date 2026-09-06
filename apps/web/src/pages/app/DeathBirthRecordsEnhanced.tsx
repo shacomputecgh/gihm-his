@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Badge, Card } from '../../components/ui';
+import { Badge, Card, useToast } from '../../components/ui';
 
 interface BirthRecord { id: string; babyName: string; motherName: string; fatherName: string; dob: string; timeOfBirth: string; sex: 'Male' | 'Female'; weight: string; length: string; apgar1: number; apgar5: number; deliveredBy: string; mode: 'Normal VD' | 'Assisted VD' | 'C-Section' | 'Breech'; complications: string; certificateIssued: boolean; }
 interface DeathRecord { id: string; patientName: string; mrn: string; age: number; sex: string; dateOfDeath: string; timeOfDeath: string; causeOfDeath: string; underlyingCause: string; certifiedBy: string; postMortem: boolean; certificateIssued: boolean; burialPermit: boolean; }
@@ -29,7 +29,7 @@ export default function DeathBirthRecordsEnhanced() {
         </div>
         <div className="flex gap-2">
           <button onClick={() => setTab('births')} className={`px-4 py-2 rounded-lg text-sm font-medium ${tab === 'births' ? 'bg-blue-600 text-white' : 'bg-slate-100'}`}>👶 Birth Records</button>
-          <button onClick={() => setTab('deaths')} className className={`px-4 py-2 rounded-lg text-sm font-medium ${tab === 'deaths' ? 'bg-blue-600 text-white' : 'bg-slate-100'}`}>📋 Death Records</button>
+          <button onClick={() => setTab('deaths')} className={`px-4 py-2 rounded-lg text-sm font-medium ${tab === 'deaths' ? 'bg-blue-600 text-white' : 'bg-slate-100'}`}>📋 Death Records</button>
           <button onClick={() => {}} className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700">+ New Record</button>
         </div>
       </div>
@@ -49,7 +49,7 @@ export default function DeathBirthRecordsEnhanced() {
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-lg">{b.babyName}</span>
-                    <Badge tone={b.sex === 'Male' ? 'blue' : 'pink'}>{b.sex}</Badge>
+                    <Badge tone={b.sex === 'Male' ? 'blue' : 'gray'}>{b.sex}</Badge>
                     <Badge tone={b.certificateIssued ? 'green' : 'gold'}>{b.certificateIssued ? 'Certificate Issued' : 'Pending Certificate'}</Badge>
                   </div>
                   <div className="grid grid-cols-4 gap-4 mt-2 text-sm text-slate-600">

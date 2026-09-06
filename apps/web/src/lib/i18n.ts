@@ -919,6 +919,7 @@ export function setLanguage(lang: Language) {
   currentLang = lang;
   localStorage.setItem(STORAGE_KEY, lang);
   listeners.forEach((fn) => fn());
+  applyGlobalTranslation(lang);
 }
 
 export function getCurrentLanguage(): Language {
@@ -944,4 +945,136 @@ export function useTranslation() {
   const translate = useCallback((key: string) => t(key, lang), [lang]);
 
   return { lang, setLang, t: translate };
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Global DOM auto-translation
+//
+// The app has 400+ pages and only a handful call useTranslation() directly.
+// This layer translates *rendered* UI text across the whole application by
+// matching English phrases (from the `en` dictionary values) in the DOM.
+// It survives React re-renders via a MutationObserver and restores the
+// original text when switching back to English.
+// ─────────────────────────────────────────────────────────────────
+
+const SKIP_TAGS = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEXTAREA', 'CODE', 'PRE']);
+const TRANSLATABLE_ATTRS = ['placeholder', 'title', 'aria-label', 'alt'] as const;
+
+/** lowercased English phrase → dictionary key */
+const phraseToKey = new Map<string, string>();
+for (const [k, v] of Object.entries(translations.en)) {
+  const phrase = v.trim().toLowerCase();
+  if (phrase && !phraseToKey.has(phrase)) phraseToKey.set(phrase, k);
+}
+
+const translatedNodes = new Set<Text>();
+const translatedEls = new Set<Element>();
+const originalText = new WeakMap<Text, string>();
+const originalAttrs = new WeakMap<Element, Map<string, string>>();
+
+let activeLang: Language = getStoredLanguage();
+let sweepScheduled = false;
+let translatorStarted = false;
+
+function translateTextNode(node: Text, lang: Language) {
+  const raw = node.nodeValue ?? '';
+  const text = raw.trim();
+  if (!text || text.length > 60 || /^\d+([.,]\d+)*$/.test(text)) return;
+  const key = phraseToKey.get(text.toLowerCase());
+  if (!key) return;
+  const translated = translations[lang]?.[key];
+  if (!translated || translated === translations.en[key]) return;
+  if (!originalText.has(node)) originalText.set(node, raw);
+  const leading = raw.match(/^\s*/)?.[0] ?? '';
+  const trailing = raw.match(/\s*$/)?.[0] ?? '';
+  const next = leading + translated + trailing;
+  if (node.nodeValue === next) return; // avoid mutation-observer feedback loops
+  node.nodeValue = next;
+  translatedNodes.add(node);
+}
+
+function translateElAttrs(el: Element, lang: Language) {
+  for (const attr of TRANSLATABLE_ATTRS) {
+    const val = el.getAttribute(attr);
+    if (!val) continue;
+    const key = phraseToKey.get(val.trim().toLowerCase());
+    if (!key) continue;
+    const translated = translations[lang]?.[key];
+    if (!translated) continue;
+    let map = originalAttrs.get(el);
+    if (!map) {
+      map = new Map();
+      originalAttrs.set(el, map);
+    }
+    if (!map.has(attr)) map.set(attr, val);
+    el.setAttribute(attr, translated);
+  }
+  translatedEls.add(el);
+}
+
+function sweep(root: ParentNode | null, lang: Language) {
+  if (!root) return;
+
+  if (lang === 'en') {
+    // Restore originals and prune disconnected nodes
+    for (const node of translatedNodes) {
+      if (!node.isConnected) {
+        translatedNodes.delete(node);
+        continue;
+      }
+      const orig = originalText.get(node);
+      if (orig !== undefined) node.nodeValue = orig;
+    }
+    for (const el of translatedEls) {
+      if (!el.isConnected) {
+        translatedEls.delete(el);
+        continue;
+      }
+      const map = originalAttrs.get(el);
+      if (map) for (const [attr, val] of map) el.setAttribute(attr, val);
+    }
+    return;
+  }
+
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(n) {
+      const parent = (n as Text).parentElement;
+      if (!parent || SKIP_TAGS.has(parent.tagName) || parent.isContentEditable) {
+        return NodeFilter.FILTER_REJECT;
+      }
+      return NodeFilter.FILTER_ACCEPT;
+    },
+  });
+  let current: Node | null;
+  while ((current = walker.nextNode())) translateTextNode(current as Text, lang);
+
+  const scope = root instanceof Element ? [root, ...Array.from(root.querySelectorAll('*'))] : Array.from(root.querySelectorAll('*'));
+  for (const el of scope) translateElAttrs(el, lang);
+}
+
+const sweepObserver = new MutationObserver(() => {
+  if (activeLang === 'en' || sweepScheduled) return;
+  sweepScheduled = true;
+  window.setTimeout(() => {
+    sweepScheduled = false;
+    sweep(document.body, activeLang);
+  }, 250);
+});
+
+/** Translate the whole document to `lang` (or restore English). */
+export function applyGlobalTranslation(lang: Language) {
+  activeLang = lang;
+  sweep(document.body, lang);
+}
+
+/** Start observing the DOM and apply the stored language. Call once on app mount. */
+export function initGlobalTranslator() {
+  if (translatorStarted || typeof document === 'undefined') return;
+  translatorStarted = true;
+  sweepObserver.observe(document.documentElement, { childList: true, subtree: true, characterData: true });
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => applyGlobalTranslation(getStoredLanguage()));
+  } else {
+    applyGlobalTranslation(getStoredLanguage());
+  }
 }

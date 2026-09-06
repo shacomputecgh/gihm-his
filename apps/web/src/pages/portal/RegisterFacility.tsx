@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { api } from '../../lib/api';
+import { getRegionsFallback, getDistrictsFallback } from '../../lib/fallback';
 import type { District, Region } from '../../types';
 import { Button, Card, DemoBanner, EmptyState, Field, Input, Select, Textarea } from '../../components/ui';
 import { Icon } from '../../components/icons';
@@ -39,12 +40,16 @@ export default function RegisterFacility() {
   });
 
   useEffect(() => {
-    void api<{ regions: Region[] }>('/geography/regions', { public: true }).then((r) => setRegions(r.regions)).catch(() => undefined);
+    void api<{ regions: Region[] }>('/geography/regions', { public: true })
+      .then((r) => setRegions(r.regions))
+      .catch(() => getRegionsFallback().then(setRegions).catch(() => undefined));
   }, []);
 
   useEffect(() => {
     if (!regionId) { setDistricts([]); setDistrictId(''); return; }
-    void api<{ districts: District[] }>(`/geography/districts?regionId=${regionId}`, { public: true }).then((r) => setDistricts(r.districts)).catch(() => undefined);
+    void api<{ districts: District[] }>(`/geography/districts?regionId=${regionId}`, { public: true })
+      .then((r) => setDistricts(r.districts))
+      .catch(() => getDistrictsFallback(regionId).then(setDistricts).catch(() => undefined));
   }, [regionId]);
 
   const typeOptions = useMemo(() => Object.entries(FACILITY_TYPE_LABELS).map(([value, label]) => ({ value, label })), []);

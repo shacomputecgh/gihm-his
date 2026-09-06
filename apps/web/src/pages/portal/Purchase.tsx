@@ -1,5 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DEVELOPER_CREDENTIALS } from '../../lib/apiConfig';
+import { api } from '../../lib/api';
+import { getRegionsFallback, getDistrictsFallback } from '../../lib/fallback';
+import type { District, Region } from '../../types';
 
 const PLANS = [
   {
@@ -73,15 +76,30 @@ function formatCurrency(amount: number): string {
 
 export default function Purchase() {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const [regions, setRegions] = useState<Region[]>([]);
+  const [districts, setDistricts] = useState<District[]>([]);
   const [formData, setFormData] = useState({
     facilityName: '',
     facilityType: 'hospital',
     contactName: '',
     contactEmail: '',
     contactPhone: '',
-    region: '',
-    district: '',
+    regionId: '',
+    districtId: '',
   });
+
+  useEffect(() => {
+    api<{ regions: Region[] }>('/geography/regions', { public: true })
+      .then((r) => setRegions(r.regions))
+      .catch(() => getRegionsFallback().then(setRegions).catch(() => undefined));
+  }, []);
+
+  useEffect(() => {
+    if (!formData.regionId) { setDistricts([]); setFormData((p) => ({ ...p, districtId: '' })); return; }
+    api<{ districts: District[] }>('/geography/districts', { public: true, query: { regionId: formData.regionId } })
+      .then((r) => setDistricts(r.districts))
+      .catch(() => getDistrictsFallback(formData.regionId).then(setDistricts).catch(() => undefined));
+  }, [formData.regionId]);
   const [step, setStep] = useState<'select' | 'details' | 'payment' | 'processing' | 'success'>('select');
   const [processing, setProcessing] = useState(false);
 
@@ -126,8 +144,8 @@ export default function Purchase() {
             facilityType: formData.facilityType,
             contactName: formData.contactName,
             contactPhone: formData.contactPhone,
-            region: formData.region,
-            district: formData.district,
+            region: regions.find((r) => r.id === formData.regionId)?.name ?? '',
+            district: districts.find((d) => d.id === formData.districtId)?.name ?? '',
             custom_fields: [
               {
                 display_name: 'Facility Name',
@@ -334,38 +352,25 @@ export default function Purchase() {
                   <div>
                     <label className="mb-1.5 block text-sm font-semibold text-slate-700">Region</label>
                     <select
-                      value={formData.region}
-                      onChange={(e) => setFormData({ ...formData, region: e.target.value })}
+                      value={formData.regionId}
+                      onChange={(e) => setFormData({ ...formData, regionId: e.target.value })}
                       className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
                     >
                       <option value="">Select region</option>
-                      <option value="Greater Accra">Greater Accra</option>
-                      <option value="Ashanti">Ashanti</option>
-                      <option value="Western">Western</option>
-                      <option value="Central">Central</option>
-                      <option value="Eastern">Eastern</option>
-                      <option value="Northern">Northern</option>
-                      <option value="Volta">Volta</option>
-                      <option value="Upper East">Upper East</option>
-                      <option value="Upper West">Upper West</option>
-                      <option value="Brong-Ahafo">Brong-Ahafo</option>
-                      <option value="Western North">Western North</option>
-                      <option value="Ahafo">Ahafo</option>
-                      <option value="Bono East">Bono East</option>
-                      <option value="Oti">Oti</option>
-                      <option value="Savannah">Savannah</option>
-                      <option value="North East">North East</option>
+                      {regions.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="mb-1.5 block text-sm font-semibold text-slate-700">District</label>
-                    <input
-                      type="text"
-                      value={formData.district}
-                      onChange={(e) => setFormData({ ...formData, district: e.target.value })}
-                      placeholder="e.g. Accra Metropolitan"
-                      className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-                    />
+                    <select
+                      value={formData.districtId}
+                      onChange={(e) => setFormData({ ...formData, districtId: e.target.value })}
+                      disabled={!formData.regionId}
+                      className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-slate-50"
+                    >
+                      <option value="">{formData.regionId ? 'Select district' : 'Choose region first'}</option>
+                      {districts.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+                    </select>
                   </div>
                 </div>
 
@@ -459,10 +464,10 @@ export default function Purchase() {
                     <span className="text-sm text-slate-500">Phone</span>
                     <span className="font-semibold text-slate-800">{formData.contactPhone}</span>
                   </div>
-                  {formData.region && (
+                  {formData.regionId && (
                     <div className="flex justify-between border-b border-slate-100 pb-3">
                       <span className="text-sm text-slate-500">Location</span>
-                      <span className="font-semibold text-slate-800">{formData.district ? `${formData.district}, ` : ''}{formData.region}</span>
+                      <span className="font-semibold text-slate-800">{districts.find((d) => d.id === formData.districtId)?.name ? `${districts.find((d) => d.id === formData.districtId)?.name}, ` : ''}{regions.find((r) => r.id === formData.regionId)?.name}</span>
                     </div>
                   )}
                   <div className="flex justify-between pt-2">

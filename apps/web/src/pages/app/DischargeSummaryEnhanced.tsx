@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Badge, Card } from '../../components/ui';
+import { Badge, Card, useToast } from '../../components/ui';
 
 interface Discharge { id: string; patientName: string; mrn: string; ward: string; doctor: string; admissionDate: string; dischargeDate: string; diagnosis: string; admissionSummary: string; treatment: string; dischargeMedications: string[]; followUp: string; instructions: string; condition: 'Stable' | 'Improved' | 'Unchanged' | 'Deteriorated'; mode: 'Routine' | 'AMA' | 'Transfer' | 'Referred'; }
 

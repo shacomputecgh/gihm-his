@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Badge, Card } from '../../components/ui';
+import { api } from '../../lib/api';
+import type { Region, District } from '../../types';
 
 interface HospitalProfile { id: string; name: string; type: 'Teaching Hospital' | 'Regional Hospital' | 'District Hospital' | 'Health Centre' | 'CHPS' | 'Private Hospital' | 'Mission Hospital'; region: string; district: string; address: string; phone: string; email: string; website: string; ghsCode: string; beds: number; staff: number; departments: string[]; services: string[]; accreditation: string; established: string; logo?: string; }
 
@@ -11,10 +13,22 @@ const PROFILE: HospitalProfile = {
 };
 
 const FACILITY_TYPES = ['Teaching Hospital', 'Regional Hospital', 'District Hospital', 'Health Centre', 'CHPS', 'Private Hospital', 'Mission Hospital'];
-const GHANA_REGIONS = ['Greater Accra', 'Ashanti', 'Western', 'Central', 'Eastern', 'Northern', 'Volta', 'Upper East', 'Upper West', 'Brong Ahafo', 'Western North', 'Ahafo', 'Bono East', 'Oti', 'North East', 'Savannah'];
 
 export default function HospitalProfileSettingsEnhanced() {
   const [tab, setTab] = useState<'profile' | 'departments' | 'services' | 'compliance'>('profile');
+  const [regions, setRegions] = useState<Region[]>([]);
+  const [districts, setDistricts] = useState<District[]>([]);
+  const [regionId, setRegionId] = useState('');
+
+  useEffect(() => {
+    api<{ regions: Region[] }>('/geography/regions', { public: true }).then((r) => setRegions(r.regions)).catch(() => undefined);
+  }, []);
+
+  useEffect(() => {
+    if (!regionId) { setDistricts([]); return; }
+    api<{ districts: District[] }>('/geography/districts', { public: true, query: { regionId } })
+      .then((r) => setDistricts(r.districts)).catch(() => undefined);
+  }, [regionId]);
 
   return (
     <div className="space-y-6">
@@ -39,8 +53,8 @@ export default function HospitalProfileSettingsEnhanced() {
             <div><label className="text-xs text-slate-500">Hospital Name</label><input defaultValue={PROFILE.name} className="w-full border rounded-lg px-3 py-2 text-sm mt-1" /></div>
             <div><label className="text-xs text-slate-500">Facility Type</label><select defaultValue={PROFILE.type} className="w-full border rounded-lg px-3 py-2 text-sm mt-1">{FACILITY_TYPES.map(t => <option key={t}>{t}</option>)}</select></div>
             <div><label className="text-xs text-slate-500">GHS Code</label><input defaultValue={PROFILE.ghsCode} className="w-full border rounded-lg px-3 py-2 text-sm mt-1" /></div>
-            <div><label className="text-xs text-slate-500">Region</label><select defaultValue={PROFILE.region} className="w-full border rounded-lg px-3 py-2 text-sm mt-1">{GHANA_REGIONS.map(r => <option key={r}>{r}</option>)}</select></div>
-            <div><label className="text-xs text-slate-500">District</label><input defaultValue={PROFILE.district} className="w-full border rounded-lg px-3 py-2 text-sm mt-1" /></div>
+            <div><label className="text-xs text-slate-500">Region</label><select defaultValue={PROFILE.region} onChange={(e) => setRegionId(regions.find(r => r.name === e.target.value)?.id ?? '')} className="w-full border rounded-lg px-3 py-2 text-sm mt-1">{regions.map(r => <option key={r.id} value={r.name}>{r.name}</option>)}</select></div>
+            <div><label className="text-xs text-slate-500">District</label><select defaultValue={PROFILE.district} disabled={!regionId} className="w-full border rounded-lg px-3 py-2 text-sm mt-1 disabled:bg-slate-50"><option value="">{regionId ? 'Select district…' : 'Choose region first'}</option>{districts.map(d => <option key={d.id} value={d.name}>{d.name}</option>)}</select></div>
             <div><label className="text-xs text-slate-500">Address</label><input defaultValue={PROFILE.address} className="w-full border rounded-lg px-3 py-2 text-sm mt-1" /></div>
             <div><label className="text-xs text-slate-500">Phone</label><input defaultValue={PROFILE.phone} className="w-full border rounded-lg px-3 py-2 text-sm mt-1" /></div>
             <div><label className="text-xs text-slate-500">Email</label><input defaultValue={PROFILE.email} className="w-full border rounded-lg px-3 py-2 text-sm mt-1" /></div>

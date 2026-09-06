@@ -1,5 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Card, Badge, Button, Input } from '../../components/ui';
+import { api } from '../../lib/api';
+import type { Region, District } from '../../types';
 
 interface Outreach {
   id: string;
@@ -31,6 +33,19 @@ export default function CommunityHealthTracker() {
   const [showAdd, setShowAdd] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [form, setForm] = useState<Outreach>({ id: '', programme: '', date: '', location: '', communityName: '', district: '', region: '', teamLeader: '', teamMembers: '', targetGroup: '', populationServed: 0, activities: '', findings: '', referrals: 0, followUpRequired: false, followUpDate: '', status: 'Planned' });
+  const [regions, setRegions] = useState<Region[]>([]);
+  const [districts, setDistricts] = useState<District[]>([]);
+  const [regionId, setRegionId] = useState('');
+
+  useEffect(() => {
+    api<{ regions: Region[] }>('/geography/regions', { public: true }).then((r) => setRegions(r.regions)).catch(() => undefined);
+  }, []);
+
+  useEffect(() => {
+    if (!regionId) { setDistricts([]); return; }
+    api<{ districts: District[] }>('/geography/districts', { public: true, query: { regionId } })
+      .then((r) => setDistricts(r.districts)).catch(() => undefined);
+  }, [regionId]);
 
   const filtered = useMemo(() => records.filter(r =>
     r.communityName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -75,8 +90,20 @@ export default function CommunityHealthTracker() {
             <Input type="date" placeholder="Date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} />
             <Input placeholder="Location" value={form.location} onChange={e => setForm({ ...form, location: e.target.value })} />
             <Input placeholder="Community Name" value={form.communityName} onChange={e => setForm({ ...form, communityName: e.target.value })} />
-            <Input placeholder="District" value={form.district} onChange={e => setForm({ ...form, district: e.target.value })} />
-            <Input placeholder="Region" value={form.region} onChange={e => setForm({ ...form, region: e.target.value })} />
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Region</label>
+              <select value={regionId} onChange={e => { setRegionId(e.target.value); const r = regions.find(rg => rg.id === e.target.value); setForm({ ...form, region: r?.name ?? '', district: '' }); }} className="w-full border rounded-lg px-3 py-2 text-sm">
+                <option value="">Select region…</option>
+                {regions.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">District</label>
+              <select value={form.district} onChange={e => setForm({ ...form, district: e.target.value })} disabled={!regionId} className="w-full border rounded-lg px-3 py-2 text-sm disabled:bg-slate-50">
+                <option value="">{regionId ? 'Select district…' : 'Choose region first'}</option>
+                {districts.map((d) => <option key={d.id} value={d.name}>{d.name}</option>)}
+              </select>
+            </div>
             <Input placeholder="Team Leader" value={form.teamLeader} onChange={e => setForm({ ...form, teamLeader: e.target.value })} />
             <Input placeholder="Team Members" value={form.teamMembers} onChange={e => setForm({ ...form, teamMembers: e.target.value })} />
             <Input placeholder="Target Group" value={form.targetGroup} onChange={e => setForm({ ...form, targetGroup: e.target.value })} />

@@ -88,6 +88,15 @@ export async function api<T>(path: string, opts: RequestOpts = {}): Promise<T> {
     /* empty body */
   }
 
+  // Static hosts (e.g. Vercel) rewrite every path — including /api/v1/* — to the
+  // SPA shell and answer with HTTP 200 + HTML. That is NOT a valid API response:
+  // treat it as if the backend were unreachable so the fallback-data layer
+  // engages instead of storing null/HTML in component state.
+  const looksLikeHtml = typeof data === 'string' || data === null;
+  if (looksLikeHtml) {
+    throw new ApiRequestError(0, 'NETWORK', 'API backend unreachable — static hosting response');
+  }
+
   if (!res.ok) {
     const err = data as ApiError | null;
     const code = err?.error?.code ?? 'HTTP_ERROR';

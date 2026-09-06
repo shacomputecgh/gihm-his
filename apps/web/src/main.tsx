@@ -10,6 +10,7 @@ import { ensureLocalBackend, initDesktopShell, setupShellEvents } from './lib/de
 import { Toaster } from './components/ui';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { applyTheme } from './components/ThemeToggle';
+import { initGlobalTranslator } from './lib/i18n';
 
 // Apply saved dark mode preference immediately (before paint)
 try {
@@ -29,6 +30,10 @@ void setupShellEvents();
 // API even when the LAN has no server. The Rust setup() already auto-starts
 // it; this is the belt-and-braces retry in case the user stopped it.
 void ensureLocalBackend();
+// Global auto-translation: translate rendered UI text on every page using the
+// i18n dictionary, so the language selector works app-wide (not just on the
+// few pages that call useTranslation directly).
+initGlobalTranslator();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

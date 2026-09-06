@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { api } from '../../lib/api';
+import { getRegionsFallback, getDistrictsFallback, getFacilitiesFallback } from '../../lib/fallback';
 import type { District, Facility, Region } from '../../types';
 import { Badge, Card, EmptyState, Field, Icon, Input, Segmented, Select, Spinner } from '../../components/ui';
 import { FACILITY_TYPE_LABELS, SERVICE_LABELS, titleCase } from '../../lib/format';
@@ -37,12 +38,16 @@ export default function FindHealthcare() {
   const page = Number(params.get('page') ?? '1');
 
   useEffect(() => {
-    void api<{ regions: Region[] }>('/geography/regions', { public: true }).then((r) => setRegions(r.regions)).catch(() => undefined);
+    void api<{ regions: Region[] }>('/geography/regions', { public: true })
+      .then((r) => setRegions(r.regions))
+      .catch(() => getRegionsFallback().then(setRegions).catch(() => undefined));
   }, []);
 
   useEffect(() => {
     if (!regionId) { setDistricts([]); return; }
-    void api<{ districts: District[] }>('/geography/districts', { public: true, query: { regionId } }).then((r) => setDistricts(r.districts)).catch(() => undefined);
+    void api<{ districts: District[] }>('/geography/districts', { public: true, query: { regionId } })
+      .then((r) => setDistricts(r.districts))
+      .catch(() => getDistrictsFallback(regionId).then(setDistricts).catch(() => undefined));
   }, [regionId]);
 
   useEffect(() => {
@@ -52,7 +57,7 @@ export default function FindHealthcare() {
       query: { q, regionId, districtId, type, ownership, ownershipIn: ownershipIn || undefined, page: String(page), pageSize: '9' },
     })
       .then(setData)
-      .catch(() => setData(null))
+      .catch(() => getFacilitiesFallback({ q, regionId, districtId, type, ownership, page, pageSize: 9 }).then(setData).catch(() => setData(null)))
       .finally(() => setLoading(false));
   }, [q, regionId, districtId, type, ownership, ownershipIn, page]);
 

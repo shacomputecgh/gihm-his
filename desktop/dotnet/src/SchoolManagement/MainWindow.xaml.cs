@@ -11,7 +11,7 @@ namespace SchoolManagement;
 
 public partial class MainWindow : Window
 {
-    private const string DefaultServerUrl = "http://localhost:5173";
+    private const string DefaultServerUrl = "https://dist-chi-one-cef2ntnu3d.vercel.app";
     private static readonly string OfflineCachePath =
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                      "GIHM-HIS", "cache");

@@ -83,3 +83,15 @@ electron-app/dist/
 electron-app/node_modules/
 electron-app/api/node_modules/
 electron-app/frontend/
+.env*
+
+# Local build artifacts (too large for git; built via desktop/dotnet/build-release.mjs)
+/*.zip
+/$sdkRoot/
+/artifacts/
+/publish/
+desktop/dotnet/src/SchoolManagement/web-dist/
+.freebuff/*.db-shm
+.freebuff/*.db-wal
+.freebuff/*.log*
+.freebuff/*-pid.txt

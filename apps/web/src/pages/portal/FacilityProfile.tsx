@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api } from '../../lib/api';
+import { getFacilitiesFallback } from '../../lib/fallback';
 import type { Facility } from '../../types';
 import { Badge, Card, Icon, Spinner, Button } from '../../components/ui';
 import { FACILITY_TYPE_LABELS, SERVICE_LABELS, titleCase } from '../../lib/format';
@@ -14,7 +15,15 @@ export default function FacilityProfile() {
     if (!id) return;
     setFacility(null);
     setError(false);
-    void api<Facility>(`/facilities/${id}`, { public: true }).then(setFacility).catch(() => setError(true));
+    void api<Facility>(`/facilities/${id}`, { public: true })
+      .then(setFacility)
+      .catch(() => getFacilitiesFallback({ pageSize: 500 })
+        .then(r => {
+          const found = r.items.find((f) => f.id === id);
+          if (found) setFacility(found as unknown as Facility);
+          else setError(true);
+        })
+        .catch(() => setError(true)));
   }, [id]);
 
   if (error) {

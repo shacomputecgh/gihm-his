@@ -425,7 +425,7 @@ const NAV: NavItem[] = [
   { to: "/app/blood-bank-enhanced", label: "Blood Bank Enhanced", icon: "droplet", perms: ["view_lab_result"], group: "Laboratory" },
 ];
 
-function canSee(user: { scope: string; permissions: string[] } | null, perms?: string[]): boolean {
+function canSee(user: { scope: string; permissions: string[]; roleCode?: string } | null, perms?: string[]): boolean {
   if (!user) return false;
   if (user.scope === 'PATIENT') return false;
   // Developer has access to everything

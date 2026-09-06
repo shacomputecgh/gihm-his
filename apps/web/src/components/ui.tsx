@@ -87,6 +87,8 @@ export function StatCard({ label, value, icon, tone = 'navy', hint }: { label: s
     navy: 'bg-g-navy/10 text-g-navy',
     gray: 'bg-slate-100 text-slate-500',
     blue: 'bg-sky-50 text-sky-600',
+    purple: 'bg-purple-50 text-purple-600',
+    orange: 'bg-orange-50 text-orange-600',
   };
   return (
     <div className="card-hover rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-g-dark-border dark:bg-g-dark-surface">

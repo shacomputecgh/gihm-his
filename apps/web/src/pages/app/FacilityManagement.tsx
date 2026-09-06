@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import AddNewForm from '../../components/AddNewForm';
 import { Badge } from '../../components/ui';
+import { api } from '../../lib/api';
+import type { Region, District } from '../../types';
 
 type AssetStatus = 'operational' | 'maintenance' | 'out_of_service' | 'decommissioned';
 type BuildingStatus = 'active' | 'renovation' | 'closed';
@@ -125,6 +127,20 @@ export default function FacilityManagement() {
 
   const [showAdd, setShowAdd] = useState(false)
   const [editingItem, setEditingItem] = useState<Record<string, string> | null>(null);
+  const [regions, setRegions] = useState<Region[]>([]);
+  const [districts, setDistricts] = useState<District[]>([]);
+  const [regionId, setRegionId] = useState('');
+  const [districtId, setDistrictId] = useState('');
+
+  useEffect(() => {
+    api<{ regions: Region[] }>('/geography/regions', { public: true }).then((r) => setRegions(r.regions)).catch(() => undefined);
+  }, []);
+
+  useEffect(() => {
+    if (!regionId) { setDistricts([]); setDistrictId(''); return; }
+    api<{ districts: District[] }>('/geography/districts', { public: true, query: { regionId } })
+      .then((r) => setDistricts(r.districts)).catch(() => undefined);
+  }, [regionId]);
   return (
     <div className="space-y-6">
       <div className="flex justify-end mb-4">
@@ -133,13 +149,25 @@ export default function FacilityManagement() {
         </button>
       </div>
       {showAdd && (
-        <AddNewForm
-          title="Add New Facility"
-          fields={[{"name":"facilityName","label":"Facility Name","type":"text","required":true},{"name":"facilityType","label":"Facility Type","type":"select","options":["Teaching Hospital","Regional Hospital","District Hospital","Health Centre","CHPS Compound","Polyclinic","Private Hospital","Clinic"]},{"name":"region","label":"Region","type":"select","options":["Greater Accra","Ashanti","Western","Northern","Central","Eastern","Volta","Upper East","Upper West","Brong Ahafo","Western North","Ahafo","Bono East","Oti","Savannah","North East"]},{"name":"district","label":"District","type":"text"},{"name":"phone","label":"Phone","type":"tel"},{"name":"email","label":"Email","type":"email"}]}
-          onSave={(data) => { console.log("Saving:", data); setShowAdd(false); }}
-          initialData={editingItem}
-          onCancel={() => { setShowAdd(false); setEditingItem(null); }}
-        />
+        <div className="bg-white rounded-lg border-2 border-green-200 p-5 shadow-lg">
+          <h3 className="font-bold text-green-800 text-lg mb-4">Add New Facility</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-3">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Region <span className="text-red-500">*</span></label>
+              <select value={regionId} onChange={(e) => setRegionId(e.target.value)} required className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-green-500 focus:ring-1 focus:ring-green-500">
+                <option value="">Select region…</option>
+                {regions.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">District <span className="text-red-500">*</span></label>
+              <select value={districtId} onChange={(e) => setDistrictId(e.target.value)} required disabled={!regionId} className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-green-500 focus:ring-1 focus:ring-green-500 disabled:bg-slate-50">
+                <option value="">{regionId ? 'Select district…' : 'Choose region first'}</option>
+                {districts.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+              </select>
+            </div>
+          </div>
+        </div>
       )}
       <div className="flex items-center justify-between">
         <div>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Badge, Card } from '../../components/ui';
+import { Badge, Card, useToast } from '../../components/ui';
 
 interface Bed { id: string; ward: string; bedNumber: string; type: 'General' | 'HDU' | 'ICU' | 'Isolation' | 'Paediatric' | 'Maternity'; status: 'Occupied' | 'Available' | 'Cleaning' | 'Maintenance' | 'Reserved'; patientName?: string; mrn?: string; admitDate?: string; diagnosis?: string; cleaningStaff?: string; cleaningStarted?: string; expectedReady?: string; }
 

@@ -44,6 +44,8 @@
         .btn{padding:13px 28px;border-radius:11px;text-decoration:none;font-weight:600;font-size:0.95em;transition:all 0.3s;display:inline-flex;align-items:center;gap:8px;border:none;cursor:pointer}
         .btn-p{background:linear-gradient(135deg,#7c3aed,#a78bfa);color:white;box-shadow:0 4px 20px rgba(124,58,237,0.3)}
         .btn-p:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(124,58,237,0.5)}
+        .btn-green{background:linear-gradient(135deg,#2563eb,#1d4ed8);color:white;box-shadow:0 4px 20px rgba(37,99,235,0.3)}
+        .btn-green:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(37,99,235,0.5)}
         .btn-g{background:#25d366;color:white;box-shadow:0 4px 20px rgba(37,211,102,0.3)}
         .btn-g:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(37,211,102,0.5)}
         .btn-o{background:rgba(255,255,255,0.05);color:#e2e8f0;border:1px solid rgba(255,255,255,0.1)}
@@ -142,7 +144,7 @@
 
 <header class="hdr">
     <div class="brand"><div class="brand-icon"><img src="images/logo-login.jpg" alt="Logo"></div><span class="brand-name">Shacomputec</span></div>
-    <nav><a href="#home">Home</a><a href="#pricing">School Pricing</a><a href="#hospital">Hospital HIS</a><a href="#hospital-pricing">Hospital Pricing</a><a href="#contact">Contact</a><a href="https://deploy-vercel-flax-nine.vercel.app/login" class="cta"><i class="fas fa-rocket"></i> Try Demo</a></nav>
+    <nav><a href="#home">Home</a><a href="#pricing">School Pricing</a><a href="#hospital">Hospital HIS</a><a href="#hospital-pricing">Hospital Pricing</a><a href="#contact">Contact</a><a href="https://dist-chi-one-cef2ntnu3d.vercel.app" target="_blank" class="cta"><i class="fas fa-rocket"></i> Try GIHM-HIS Demo</a></nav>
 </header>
 
 <section class="hero" id="home">
@@ -270,9 +272,15 @@
                 <div style="display:flex;align-items:center;gap:8px;color:rgba(255,255,255,0.85);font-size:0.9em"><span style="color:#4ade80">✓</span> Paystack Online Payments</div>
             </div>
             <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;position:relative;z-index:1">
-                <a href="https://shacomputecghapp.unaux.com/login" class="btn" style="background:#2563eb;color:white;box-shadow:0 4px 20px rgba(37,99,235,0.3)"><i class="fas fa-play-circle"></i> Start Free Trial</a>
-                <a href="https://shacomputecghapp.unaux.com/login" class="btn btn-o">Login / Activate</a>
+                <a href="https://dist-chi-one-cef2ntnu3d.vercel.app/login" target="_blank" class="btn btn-green"><i class="fas fa-play-circle"></i> Try GIHM-HIS Free</a>
+                <a href="https://dist-chi-one-cef2ntnu3d.vercel.app" target="_blank" class="btn" style="background:#2563eb;color:white;box-shadow:0 4px 20px rgba(37,99,235,0.3)"><i class="fas fa-globe"></i> Explore GIHM-HIS Demo</a>
                 <a href="https://wa.me/233530941750?text=Hi%20Shacomputec%2C%20I%20want%20to%20buy%20GIHM-HIS" class="btn" style="background:#dc2626;color:white"><i class="fab fa-whatsapp"></i> WhatsApp Me</a>
+            </div>
+            <div style="margin-top:24px;display:flex;justify-content:center;gap:20px;flex-wrap:wrap;position:relative;opacity:0.7">
+                <span style="color:rgba(255,255,255,0.7);font-size:0.85em"><i style="color:#4ade80;margin-right:5px">✓</i> 16 Regions · 261 Districts</span>
+                <span style="color:rgba(255,255,255,0.7);font-size:0.85em"><i style="color:#4ade80;margin-right:5px">✓</i> 300+ Modules</span>
+                <span style="color:rgba(255,255,255,0.7);font-size:0.85em"><i style="color:#4ade80;margin-right:5px">✓</i> Desktop + Web + Mobile</span>
+                <span style="color:rgba(255,255,255,0.7);font-size:0.85em"><i style="color:#4ade80;margin-right:5px">✓</i> Offline-First</span>
             </div>
         </div>
         <!-- GIHM-HIS Pricing -->
@@ -283,7 +291,7 @@
                 <div style="font-size:2.2em;font-weight:900;margin:6px 0">GH₵ 2,500<span style="font-size:0.4em;opacity:0.8">/year</span></div>
                 <div style="color:#64748b;font-size:0.85em;margin-bottom:14px">1 Region · 1 Hospital</div>
                 <ul style="list-style:none;text-align:left;margin-bottom:18px"><li style="padding:4px 0;font-size:0.85em;color:#94a3b8">✓ 300+ modules</li><li style="padding:4px 0;font-size:0.85em;color:#94a3b8">✓ Pharmacy, Lab, Billing</li><li style="padding:4px 0;font-size:0.85em;color:#94a3b8">✓ Email support</li></ul>
-                <a href="https://wa.me/233530941750?text=Hi%20Shacomputec%2C%20I%20want%20GIHM-HIS%20Starter" class="btn btn-o" style="width:100%;justify-content:center">Buy Now</a>
+                <button onclick="openGihmPay('gihm-starter','GIHM-HIS Starter',2500,'1 Region · 1 Hospital')" class="btn btn-o" style="width:100%;justify-content:center;border-color:rgba(255,255,255,0.2)"><i class="fas fa-shopping-cart"></i> Buy Now — GH₵ 2,500</button>
             </div>
             <div style="background:linear-gradient(135deg,#2563eb,#1d4ed8);border-radius:16px;padding:28px;text-align:center;color:white;border:2px solid rgba(255,255,255,0.2)">
                 <div style="position:absolute;top:10px;right:10px;background:rgba(255,255,255,0.2);padding:3px 10px;border-radius:16px;font-size:0.68em;font-weight:600">⭐ RECOMMENDED</div>
@@ -291,16 +299,145 @@
                 <div style="font-size:2.2em;font-weight:900;margin:6px 0">GH₵ 5,000<span style="font-size:0.4em;opacity:0.8">/year</span></div>
                 <div style="color:rgba(255,255,255,0.7);font-size:0.85em;margin-bottom:14px">1 Region · 1 Hospital</div>
                 <ul style="list-style:none;text-align:left;margin-bottom:18px"><li style="padding:4px 0;font-size:0.85em;color:rgba(255,255,255,0.85)">✓ All Starter features</li><li style="padding:4px 0;font-size:0.85em;color:rgba(255,255,255,0.85)">✓ WhatsApp, SMS & Email API</li><li style="padding:4px 0;font-size:0.85em;color:rgba(255,255,255,0.85)">✓ Paystack & ID Card Builder</li><li style="padding:4px 0;font-size:0.85em;color:rgba(255,255,255,0.85)">✓ Priority support</li></ul>
-                <a href="https://wa.me/233530941750?text=Hi%20Shacomputec%2C%20I%20want%20GIHM-HIS%20Professional" class="btn" style="background:rgba(255,255,255,0.2);color:white;border:2px solid rgba(255,255,255,0.4);width:100%;justify-content:center">Buy Now</a>
+                <button onclick="openGihmPay('gihm-pro','GIHM-HIS Professional',5000,'1 Region · 1 Hospital')" class="btn" style="background:rgba(255,255,255,0.2);color:white;border:2px solid rgba(255,255,255,0.4);width:100%;justify-content:center"><i class="fas fa-shopping-cart"></i> Buy Now — GH₵ 5,000</button>
             </div>
             <div style="background:linear-gradient(135deg,#f59e0b,#f97316);border-radius:16px;padding:28px;text-align:center;color:white">
                 <h3 style="font-size:0.95em;margin-bottom:4px">Enterprise</h3>
                 <div style="font-size:2.2em;font-weight:900;margin:6px 0">GH₵ 10,000<span style="font-size:0.4em;opacity:0.8">/year</span></div>
                 <div style="color:rgba(255,255,255,0.8);font-size:0.85em;margin-bottom:14px">All Regions · Multi-Hospital</div>
                 <ul style="list-style:none;text-align:left;margin-bottom:18px"><li style="padding:4px 0;font-size:0.85em;color:rgba(255,255,255,0.85)">✓ All Professional features</li><li style="padding:4px 0;font-size:0.85em;color:rgba(255,255,255,0.85)">✓ Multi-hospital network</li><li style="padding:4px 0;font-size:0.85em;color:rgba(255,255,255,0.85)">✓ Custom branding & domain</li><li style="padding:4px 0;font-size:0.85em;color:rgba(255,255,255,0.85)">✓ On-site installation</li></ul>
-                <a href="https://wa.me/233530941750?text=Hi%20Shacomputec%2C%20I%20want%20GIHM-HIS%20Enterprise" class="btn btn-o" style="width:100%;justify-content:center">Buy Now</a>
+                <button onclick="openGihmPay('gihm-enterprise','GIHM-HIS Enterprise',10000,'All Regions · Multi-Hospital')" class="btn btn-o" style="width:100%;justify-content:center;border-color:rgba(255,255,255,0.2)"><i class="fas fa-shopping-cart"></i> Buy Now — GH₵ 10,000</button>
             </div>
         </div>
+    </div>
+
+    <!-- ═══════ COMING SOON PRODUCTS ═══════ -->
+    <div style="margin:60px 0">
+        <div class="sec" id="coming-soon"><h2>🚀 Coming Soon</h2><p>More powerful systems on the way — by ShaComputeC</p><div class="line"></div></div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;margin:30px 0">
+
+            <!-- Pharmacy360 -->
+            <div style="background:linear-gradient(135deg,#0f172a,#1e293b);border:1px solid rgba(255,255,255,0.08);border-radius:18px;padding:30px 24px;position:relative;overflow:hidden;transition:all 0.3s">
+                <div style="position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:rgba(34,197,94,0.06);border-radius:50%;pointer-events:none"></div>
+                <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.25);padding:5px 14px;border-radius:20px;color:#4ade80;font-size:0.72em;font-weight:600;margin-bottom:16px">
+                    <span style="width:6px;height:6px;background:#4ade80;border-radius:50%;animation:pulse 2s infinite"></span>
+                    COMING SOON
+                </div>
+                <div style="font-size:2.2em;margin-bottom:10px">💊</div>
+                <h3 style="font-size:1.2em;color:#f8fafc;margin-bottom:6px">Pharmacy360</h3>
+                <p style="color:#94a3b8;font-size:0.88em;line-height:1.6;margin-bottom:16px">Complete pharmacy management system — inventory, dispensing, NHIS claims, expiry tracking, controlled substance logs, and multi-branch sync.</p>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px">
+                    <span style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.15);padding:4px 10px;border-radius:12px;color:#4ade80;font-size:0.75em">Inventory</span>
+                    <span style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.15);padding:4px 10px;border-radius:12px;color:#4ade80;font-size:0.75em">Dispensing</span>
+                    <span style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.15);padding:4px 10px;border-radius:12px;color:#4ade80;font-size:0.75em">NHIS Claims</span>
+                    <span style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.15);padding:4px 10px;border-radius:12px;color:#4ade80;font-size:0.75em">Expiry Tracking</span>
+                    <span style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.15);padding:4px 10px;border-radius:12px;color:#4ade80;font-size:0.75em">Offline-First</span>
+                </div>
+                <a href="https://wa.me/233530941750?text=Hi%20Shacomputec%2C%20I%27m%20interested%20in%20Pharmacy360" class="btn" style="background:rgba(34,197,94,0.12);color:#4ade80;border:1px solid rgba(34,197,94,0.25);padding:10px 20px;border-radius:10px;font-size:0.85em;width:100%;justify-content:center;text-decoration:none;display:inline-flex;align-items:center;gap:8px"><i class="fab fa-whatsapp"></i> Get Notified</a>
+            </div>
+
+            <!-- SuperMarket Management -->
+            <div style="background:linear-gradient(135deg,#0f172a,#1e293b);border:1px solid rgba(255,255,255,0.08);border-radius:18px;padding:30px 24px;position:relative;overflow:hidden;transition:all 0.3s">
+                <div style="position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:rgba(59,130,246,0.06);border-radius:50%;pointer-events:none"></div>
+                <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.25);padding:5px 14px;border-radius:20px;color:#60a5fa;font-size:0.72em;font-weight:600;margin-bottom:16px">
+                    <span style="width:6px;height:6px;background:#60a5fa;border-radius:50%;animation:pulse 2s infinite"></span>
+                    COMING SOON
+                </div>
+                <div style="font-size:2.2em;margin-bottom:10px">🛒</div>
+                <h3 style="font-size:1.2em;color:#f8fafc;margin-bottom:6px">SuperMarket360</h3>
+                <p style="color:#94a3b8;font-size:0.88em;line-height:1.6;margin-bottom:16px">Full supermarket & retail management — POS, barcode scanning, stock control, supplier management, loyalty program, and real-time analytics dashboard.</p>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px">
+                    <span style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.15);padding:4px 10px;border-radius:12px;color:#60a5fa;font-size:0.75em">POS System</span>
+                    <span style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.15);padding:4px 10px;border-radius:12px;color:#60a5fa;font-size:0.75em">Barcode Scanner</span>
+                    <span style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.15);padding:4px 10px;border-radius:12px;color:#60a5fa;font-size:0.75em">Stock Control</span>
+                    <span style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.15);padding:4px 10px;border-radius:12px;color:#60a5fa;font-size:0.75em">Loyalty Program</span>
+                    <span style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.15);padding:4px 10px;border-radius:12px;color:#60a5fa;font-size:0.75em">Offline-First</span>
+                </div>
+                <a href="https://wa.me/233530941750?text=Hi%20Shacomputec%2C%20I%27m%20interested%20in%20SuperMarket360" class="btn" style="background:rgba(59,130,246,0.12);color:#60a5fa;border:1px solid rgba(59,130,246,0.25);padding:10px 20px;border-radius:10px;font-size:0.85em;width:100%;justify-content:center;text-decoration:none;display:inline-flex;align-items:center;gap:8px"><i class="fab fa-whatsapp"></i> Get Notified</a>
+            </div>
+
+            <!-- Church Management -->
+            <div style="background:linear-gradient(135deg,#0f172a,#1e293b);border:1px solid rgba(255,255,255,0.08);border-radius:18px;padding:30px 24px;position:relative;overflow:hidden;transition:all 0.3s">
+                <div style="position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:rgba(168,85,247,0.06);border-radius:50%;pointer-events:none"></div>
+                <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(168,85,247,0.12);border:1px solid rgba(168,85,247,0.25);padding:5px 14px;border-radius:20px;color:#c084fc;font-size:0.72em;font-weight:600;margin-bottom:16px">
+                    <span style="width:6px;height:6px;background:#c084fc;border-radius:50%;animation:pulse 2s infinite"></span>
+                    COMING SOON
+                </div>
+                <div style="font-size:2.2em;margin-bottom:10px">⛪</div>
+                <h3 style="font-size:1.2em;color:#f8fafc;margin-bottom:6px">Church360</h3>
+                <p style="color:#94a3b8;font-size:0.88em;line-height:1.6;margin-bottom:16px">Complete church management — membership registry, tithe & offering tracking, event planning, small groups, pastoral care records, and live streaming integration.</p>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px">
+                    <span style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.15);padding:4px 10px;border-radius:12px;color:#c084fc;font-size:0.75em">Membership</span>
+                    <span style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.15);padding:4px 10px;border-radius:12px;color:#c084fc;font-size:0.75em">Tithe Tracking</span>
+                    <span style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.15);padding:4px 10px;border-radius:12px;color:#c084fc;font-size:0.75em">Event Planning</span>
+                    <span style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.15);padding:4px 10px;border-radius:12px;color:#c084fc;font-size:0.75em">Small Groups</span>
+                    <span style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.15);padding:4px 10px;border-radius:12px;color:#c084fc;font-size:0.75em">Offline-First</span>
+                </div>
+                <a href="https://wa.me/233530941750?text=Hi%20Shacomputec%2C%20I%27m%20interested%20in%20Church360" class="btn" style="background:rgba(168,85,247,0.12);color:#c084fc;border:1px solid rgba(168,85,247,0.25);padding:10px 20px;border-radius:10px;font-size:0.85em;width:100%;justify-content:center;text-decoration:none;display:inline-flex;align-items:center;gap:8px"><i class="fab fa-whatsapp"></i> Get Notified</a>
+            </div>
+
+            <!-- Hotel Management -->
+            <div style="background:linear-gradient(135deg,#0f172a,#1e293b);border:1px solid rgba(255,255,255,0.08);border-radius:18px;padding:30px 24px;position:relative;overflow:hidden;transition:all 0.3s">
+                <div style="position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:rgba(245,158,11,0.06);border-radius:50%;pointer-events:none"></div>
+                <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25);padding:5px 14px;border-radius:20px;color:#fbbf24;font-size:0.72em;font-weight:600;margin-bottom:16px">
+                    <span style="width:6px;height:6px;background:#fbbf24;border-radius:50%;animation:pulse 2s infinite"></span>
+                    COMING SOON
+                </div>
+                <div style="font-size:2.2em;margin-bottom:10px">🏨</div>
+                <h3 style="font-size:1.2em;color:#f8fafc;margin-bottom:6px">Hotel360</h3>
+                <p style="color:#94a3b8;font-size:0.88em;line-height:1.6;margin-bottom:16px">Hotel & hospitality management — room booking, front desk, housekeeping, restaurant POS, conference halls, and guest loyalty program.</p>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px">
+                    <span style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.15);padding:4px 10px;border-radius:12px;color:#fbbf24;font-size:0.75em">Room Booking</span>
+                    <span style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.15);padding:4px 10px;border-radius:12px;color:#fbbf24;font-size:0.75em">Front Desk</span>
+                    <span style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.15);padding:4px 10px;border-radius:12px;color:#fbbf24;font-size:0.75em">Restaurant POS</span>
+                    <span style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.15);padding:4px 10px;border-radius:12px;color:#fbbf24;font-size:0.75em">Housekeeping</span>
+                    <span style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.15);padding:4px 10px;border-radius:12px;color:#fbbf24;font-size:0.75em">Offline-First</span>
+                </div>
+                <a href="https://wa.me/233530941750?text=Hi%20Shacomputec%2C%20I%27m%20interested%20in%20Hotel360" class="btn" style="background:rgba(245,158,11,0.12);color:#fbbf24;border:1px solid rgba(245,158,11,0.25);padding:10px 20px;border-radius:10px;font-size:0.85em;width:100%;justify-content:center;text-decoration:none;display:inline-flex;align-items:center;gap:8px"><i class="fab fa-whatsapp"></i> Get Notified</a>
+            </div>
+
+            <!-- Fleet / Logistics -->
+            <div style="background:linear-gradient(135deg,#0f172a,#1e293b);border:1px solid rgba(255,255,255,0.08);border-radius:18px;padding:30px 24px;position:relative;overflow:hidden;transition:all 0.3s">
+                <div style="position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:rgba(236,72,153,0.06);border-radius:50%;pointer-events:none"></div>
+                <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(236,72,153,0.12);border:1px solid rgba(236,72,153,0.25);padding:5px 14px;border-radius:20px;color:#f472b6;font-size:0.72em;font-weight:600;margin-bottom:16px">
+                    <span style="width:6px;height:6px;background:#f472b6;border-radius:50%;animation:pulse 2s infinite"></span>
+                    COMING SOON
+                </div>
+                <div style="font-size:2.2em;margin-bottom:10px">🚚</div>
+                <h3 style="font-size:1.2em;color:#f8fafc;margin-bottom:6px">Fleet360</h3>
+                <p style="color:#94a3b8;font-size:0.88em;line-height:1.6;margin-bottom:16px">Fleet & logistics management — vehicle tracking, driver assignment, fuel logs, maintenance scheduling, delivery routing, and expense reporting.</p>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px">
+                    <span style="background:rgba(236,72,153,0.08);border:1px solid rgba(236,72,153,0.15);padding:4px 10px;border-radius:12px;color:#f472b6;font-size:0.75em">GPS Tracking</span>
+                    <span style="background:rgba(236,72,153,0.08);border:1px solid rgba(236,72,153,0.15);padding:4px 10px;border-radius:12px;color:#f472b6;font-size:0.75em">Fuel Logs</span>
+                    <span style="background:rgba(236,72,153,0.08);border:1px solid rgba(236,72,153,0.15);padding:4px 10px;border-radius:12px;color:#f472b6;font-size:0.75em">Maintenance</span>
+                    <span style="background:rgba(236,72,153,0.08);border:1px solid rgba(236,72,153,0.15);padding:4px 10px;border-radius:12px;color:#f472b6;font-size:0.75em">Delivery Routing</span>
+                    <span style="background:rgba(236,72,153,0.08);border:1px solid rgba(236,72,153,0.15);padding:4px 10px;border-radius:12px;color:#f472b6;font-size:0.75em">Expense Reports</span>
+                </div>
+                <a href="https://wa.me/233530941750?text=Hi%20Shacomputec%2C%20I%27m%20interested%20in%20Fleet360" class="btn" style="background:rgba(236,72,153,0.12);color:#f472b6;border:1px solid rgba(236,72,153,0.25);padding:10px 20px;border-radius:10px;font-size:0.85em;width:100%;justify-content:center;text-decoration:none;display:inline-flex;align-items:center;gap:8px"><i class="fab fa-whatsapp"></i> Get Notified</a>
+            </div>
+
+            <!-- Gym / Fitness -->
+            <div style="background:linear-gradient(135deg,#0f172a,#1e293b);border:1px solid rgba(255,255,255,0.08);border-radius:18px;padding:30px 24px;position:relative;overflow:hidden;transition:all 0.3s">
+                <div style="position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:rgba(20,184,166,0.06);border-radius:50%;pointer-events:none"></div>
+                <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(20,184,166,0.12);border:1px solid rgba(20,184,166,0.25);padding:5px 14px;border-radius:20px;color:#2dd4bf;font-size:0.72em;font-weight:600;margin-bottom:16px">
+                    <span style="width:6px;height:6px;background:#2dd4bf;border-radius:50%;animation:pulse 2s infinite"></span>
+                    COMING SOON
+                </div>
+                <div style="font-size:2.2em;margin-bottom:10px">🏋️</div>
+                <h3 style="font-size:1.2em;color:#f8fafc;margin-bottom:6px">Gym360</h3>
+                <p style="color:#94a3b8;font-size:0.88em;line-height:1.6;margin-bottom:16px">Gym & fitness center management — member subscriptions, class scheduling, trainer assignment, attendance tracking, equipment maintenance, and payment processing.</p>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px">
+                    <span style="background:rgba(20,184,166,0.08);border:1px solid rgba(20,184,166,0.15);padding:4px 10px;border-radius:12px;color:#2dd4bf;font-size:0.75em">Memberships</span>
+                    <span style="background:rgba(20,184,166,0.08);border:1px solid rgba(20,184,166,0.15);padding:4px 10px;border-radius:12px;color:#2dd4bf;font-size:0.75em">Class Schedule</span>
+                    <span style="background:rgba(20,184,166,0.08);border:1px solid rgba(20,184,166,0.15);padding:4px 10px;border-radius:12px;color:#2dd4bf;font-size:0.75em">Trainer Tools</span>
+                    <span style="background:rgba(20,184,166,0.08);border:1px solid rgba(20,184,166,0.15);padding:4px 10px;border-radius:12px;color:#2dd4bf;font-size:0.75em">Attendance</span>
+                    <span style="background:rgba(20,184,166,0.08);border:1px solid rgba(20,184,166,0.15);padding:4px 10px;border-radius:12px;color:#2dd4bf;font-size:0.75em">Offline-First</span>
+                </div>
+                <a href="https://wa.me/233530941750?text=Hi%20Shacomputec%2C%20I%27m%20interested%20in%20Gym360" class="btn" style="background:rgba(20,184,166,0.12);color:#2dd4bf;border:1px solid rgba(20,184,166,0.25);padding:10px 20px;border-radius:10px;font-size:0.85em;width:100%;justify-content:center;text-decoration:none;display:inline-flex;align-items:center;gap:8px"><i class="fab fa-whatsapp"></i> Get Notified</a>
+            </div>
+
+        </div>
+        <div style="text-align:center;margin:25px 0 0"><p style="color:#475569;font-size:0.88em">Have another system in mind? <a href="https://wa.me/233530941750?text=Hi%20Shacomputec%2C%20I%20have%20a%20custom%20project%20idea" style="color:#a78bfa;text-decoration:none;font-weight:600">Tell us what you need →</a></p></div>
     </div>
 
     <div class="cta-box">
@@ -312,7 +449,7 @@
         </div>
     </div>
 </div>
-<footer><p>&copy; 2026 Shacomputec — Built with ❤️ for Ghana Education & Healthcare</p><p style="margin-top:6px"><strong style="color:#94a3b8">Developer:</strong> shacomputec · <a href="mailto:shacomputecgh@gmail.com">shacomputecgh@gmail.com</a> · <a href="tel:+233530941750">+233 530 941 750</a></p><p style="margin-top:8px"><a href="https://deploy-vercel-flax-nine.vercel.app">GES School MIS</a> | <a href="https://shacomputecghapp.unaux.com/login">GIHM-HIS Hospital Management</a> | <a href="#hospital">Hospital Pricing</a></p></footer>
+<footer><p>&copy; 2026 Shacomputec — Built with ❤️ for Ghana Education & Healthcare</p><p style="margin-top:6px"><strong style="color:#94a3b8">Developer:</strong> shacomputec · <a href="mailto:shacomputecgh@gmail.com">shacomputecgh@gmail.com</a> · <a href="tel:+233530941750">+233 530 941 750</a></p><p style="margin-top:8px"><a href="https://deploy-vercel-flax-nine.vercel.app">GES School MIS</a> | <a href="https://dist-chi-one-cef2ntnu3d.vercel.app" target="_blank">GIHM-HIS Hospital Management</a> | <a href="#hospital">Hospital Pricing</a></p></footer>
 <div class="wa"><a href="https://wa.me/233530941750?text=Hello%20Shacomputec" title="Chat on WhatsApp"><i class="fab fa-whatsapp"></i></a></div>
 
 <!-- PAYMENT MODAL -->
@@ -443,6 +580,93 @@ document.querySelectorAll('.sec,.st,.cr,.ft,.pr,.cta-box').forEach(el => {
 document.querySelectorAll('a[href^="#"]').forEach(a => {
     a.addEventListener('click', e => { e.preventDefault(); const t = document.querySelector(a.getAttribute('href')); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
 });
+</script>
+<!-- PAYSTACK SDK -->
+<script src="https://js.paystack.co/v1/inline.js"></script>
+<script>
+// ═══════ GIHM-HIS PAYMENT MODAL ═══════
+function openGihmPay(planKey, name, amount, desc) {
+    var overlay = document.createElement('div');
+    overlay.id = 'gihmPayOverlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);z-index:300;display:flex;align-items:center;justify-content:center';
+    overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+
+    overlay.innerHTML = '<div style="background:#1e293b;border:1px solid #334155;border-radius:18px;padding:35px;max-width:440px;width:90%;position:relative;animation:modalIn 0.3s ease">'
+        + '<button onclick="this.closest(\"#gihmPayOverlay\").remove()" style="position:absolute;top:15px;right:15px;background:none;border:none;color:#94a3b8;font-size:1.3em;cursor:pointer">&times;</button>'
+        + '<h3 style="font-size:1.3em;color:#f8fafc;margin-bottom:5px">🏥 Buy GIHM-HIS License</h3>'
+        + '<p style="color:#4ade80;font-size:0.9em;margin-bottom:5px">' + name + '</p>'
+        + '<p style="color:#64748b;font-size:0.8em;margin-bottom:20px">' + desc + '</p>'
+        + '<div style="text-align:center;font-size:1.8em;font-weight:900;color:#22c55e;margin:10px 0">GH₵ ' + amount.toLocaleString() + '</div>'
+        + '<div style="margin-bottom:15px"><label style="display:block;color:#94a3b8;font-size:0.85em;margin-bottom:6px;font-weight:500">Hospital / Facility Name</label>'
+        + '<input type="text" id="gihmHospital" placeholder="e.g. Korle-Bu Teaching Hospital" style="width:100%;padding:12px 14px;background:#0f172a;border:1px solid #334155;border-radius:10px;color:#f8fafc;font-size:0.95em;font-family:Inter,sans-serif"></div>'
+        + '<div style="margin-bottom:15px"><label style="display:block;color:#94a3b8;font-size:0.85em;margin-bottom:6px;font-weight:500">Email Address</label>'
+        + '<input type="email" id="gihmEmail" placeholder="you@hospital.gov.gh" style="width:100%;padding:12px 14px;background:#0f172a;border:1px solid #334155;border-radius:10px;color:#f8fafc;font-size:0.95em;font-family:Inter,sans-serif"></div>'
+        + '<div style="margin-bottom:15px"><label style="display:block;color:#94a3b8;font-size:0.85em;margin-bottom:6px;font-weight:500">Phone Number (WhatsApp)</label>'
+        + '<input type="tel" id="gihmPhone" placeholder="024 000 0000" style="width:100%;padding:12px 14px;background:#0f172a;border:1px solid #334155;border-radius:10px;color:#f8fafc;font-size:0.95em;font-family:Inter,sans-serif"></div>'
+        + '<button id="gihmPayBtn" onclick="processGihmPayment(\"' + planKey + '\",' + amount + ',\"' + name + '\")" style="width:100%;padding:14px;background:linear-gradient(135deg,#22c55e,#10b981);color:white;border:none;border-radius:10px;font-size:1em;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;margin-top:5px"><i class=\"fas fa-lock\"></i> Pay with Paystack</button>'
+        + '<div style="display:flex;align-items:center;justify-content:center;gap:6px;color:#64748b;font-size:0.8em;margin-top:12px"><i class=\"fas fa-shield-alt\"></i> Secured by Paystack — 256-bit SSL</div>'
+        + '<div id="gihmError" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:10px;color:#f87171;font-size:0.85em;margin-top:10px;display:none"></div>'
+        + '</div>';
+
+    document.body.appendChild(overlay);
+}
+
+function processGihmPayment(planKey, amount, planName) {
+    var hospital = document.getElementById('gihmHospital').value.trim();
+    var email = document.getElementById('gihmEmail').value.trim();
+    var phone = document.getElementById('gihmPhone').value.trim();
+    var btn = document.getElementById('gihmPayBtn');
+    var errDiv = document.getElementById('gihmError');
+
+    if (!hospital) { gihmShowErr('Please enter your hospital name'); return; }
+    if (!email || !email.includes('@')) { gihmShowErr('Please enter a valid email'); return; }
+    if (!phone) { gihmShowErr('Please enter your phone number'); return; }
+
+    btn.disabled = true;
+    btn.innerHTML = '<span style=\"display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.6s linear infinite;vertical-align:middle;margin-right:8px\"></span> Processing...';
+    errDiv.style.display = 'none';
+
+    // Initialize Paystack inline payment
+    var handler = PaystackPop.setup({
+        key: 'pk_live_6bb9fe1962ccf7ee4e7b22c37e37c5b3e8bc94a5',
+        email: email,
+        amount: amount * 100, // Paystack uses kobo/pesewas
+        currency: 'GHS',
+        ref: 'GIHM-' + planKey + '-' + Date.now(),
+        metadata: {
+            custom_fields: [
+                { display_name: 'Hospital Name', variable_name: 'hospital_name', value: hospital },
+                { display_name: 'Phone', variable_name: 'phone', value: phone },
+                { display_name: 'Plan', variable_name: 'plan', value: planName }
+            ]
+        },
+        callback: function(response) {
+            // Payment successful
+            var overlay = document.getElementById('gihmPayOverlay');
+            if (overlay) {
+                overlay.innerHTML = '<div style=\"background:#1e293b;border:1px solid #334155;border-radius:18px;padding:35px;max-width:440px;width:90%;text-align:center\">'
+                    + '<div style=\"width:70px;height:70px;background:rgba(34,197,94,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 15px;font-size:2em;color:#22c55e\">✓</div>'
+                    + '<h3 style=\"color:#f8fafc;margin-bottom:8px\">Payment Successful! 🎉</h3>'
+                    + '<p style=\"color:#94a3b8;font-size:0.9em;line-height:1.6\">Your GIHM-HIS license has been activated.</p>'
+                    + '<div style=\"background:#0f172a;padding:8px 16px;border-radius:8px;color:#a78bfa;font-weight:600;font-size:0.85em;display:inline-block;margin:10px 0\">Ref: ' + response.reference + '</div>'
+                    + '<p style=\"margin-top:15px;font-size:0.85em;color:#94a3b8\">Check your email for login credentials.</p>'
+                    + '<button onclick=\"this.closest(\"\"#gihmPayOverlay\"\").remove()\" style=\"margin-top:15px;padding:10px 24px;background:#7c3aed;color:white;border:none;border-radius:10px;font-weight:600;cursor:pointer\">Close</button>'
+                    + '</div>';
+            }
+        },
+        onClose: function() {
+            btn.disabled = false;
+            btn.innerHTML = '<i class=\"fas fa-lock\"></i> Pay with Paystack';
+        }
+    });
+    handler.openIframe();
+}
+
+function gihmShowErr(msg) {
+    var errDiv = document.getElementById('gihmError');
+    errDiv.textContent = msg;
+    errDiv.style.display = 'block';
+}
 </script>
 </body>
 </html>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
+import { getRegionsFallback, getFacilitiesFallback } from '../../lib/fallback';
 import type { Region } from '../../types';
 import { Icon, Badge, DemoBanner, type IconName } from '../../components/ui';
 
@@ -20,8 +21,12 @@ export default function Home() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    void api<{ regions: Region[] }>('/geography/regions', { public: true }).then((r) => setRegions(r.regions)).catch(() => undefined);
-    void api<{ items: unknown[]; total: number }>('/facilities?pageSize=1', { public: true }).then((r) => setFacilityCount(r.total)).catch(() => undefined);
+    void api<{ regions: Region[] }>('/geography/regions', { public: true })
+      .then((r) => setRegions(r.regions))
+      .catch(() => getRegionsFallback().then(setRegions).catch(() => undefined));
+    void api<{ items: unknown[]; total: number }>('/facilities?pageSize=1', { public: true })
+      .then((r) => setFacilityCount(r.total))
+      .catch(() => getFacilitiesFallback({ pageSize: 1 }).then(r => setFacilityCount(r.total)).catch(() => undefined));
   }, []);
 
   return (

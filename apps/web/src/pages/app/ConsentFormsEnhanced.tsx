@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Badge, Card } from '../../components/ui';
+import { Badge, Card, useToast } from '../../components/ui';
 
 interface Consent { id: string; patientName: string; mrn: string; formType: string; procedure: string; doctor: string; dateGenerated: string; signedBy?: string; signedDate?: string; witness?: string; status: 'Pending' | 'Signed' | 'Declined' | 'Expired'; expiryDate?: string; language: string; notes: string; }
 

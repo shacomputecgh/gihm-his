@@ -71,7 +71,7 @@ const CONDITION_COLORS: Record<string, string> = {
 export default function MaternityEnhanced() {
   const [deliveries, _setDeliveries] = useState<Delivery[]>(SAMPLE_DELIVERIES);
   const [showAdd, setShowAdd] = useState(false);
-  const [selectedDelivery, _setSelectedDelivery] = useState<Delivery | null>(null);
+  const [selectedDelivery, setSelectedDelivery] = useState<Delivery | null>(null);
   const [activeTab, setActiveTab] = useState<'dashboard' | 'active' | 'postnatal' | 'records'>('dashboard');
 
   const activeLabors = deliveries.filter(d => d.motherCondition === 'Monitoring' || d.motherCondition === 'Critical');

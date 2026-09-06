@@ -22,7 +22,7 @@ export default function Appointments() {
     try {
       setData(await api<Page<Appointment>>('/appointments', { query: { date, pageSize: '50' } }));
     } catch {
-      setData({ items: DEMO_APPOINTMENTS as unknown as Appointment[], total: DEMO_APPOINTMENTS.length, page: 1, pageSize: 50 });
+      setData({ items: DEMO_APPOINTMENTS as unknown as Appointment[], total: DEMO_APPOINTMENTS.length, page: 1, pageSize: 50, pages: 1 });
     }
   }, [date]);
 

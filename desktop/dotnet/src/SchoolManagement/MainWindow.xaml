@@ -204,7 +204,7 @@
                         <TextBox x:Name="ServerUrlBox" Height="40" FontSize="13" Padding="14,8"
                                  Background="Transparent" Foreground="White" BorderThickness="0"
                                  CaretBrush="White" VerticalContentAlignment="Center"
-                                 Text="http://localhost:5173"/>
+                                 Text="https://dist-chi-one-cef2ntnu3d.vercel.app"/>
                     </Border>
                     <TextBlock Text="Local dev server or your deployed URL" Foreground="#445566"
                                FontSize="10" Margin="0,4,0,0"/>
