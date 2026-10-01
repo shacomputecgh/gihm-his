@@ -68,7 +68,9 @@ function mb(bytes) {
 
 function zipDir(sourceDir, zipPath) {
   if (isWin) {
-    const psScript = `Compress-Archive -Path '${sourceDir}\\*' -DestinationPath '${zipPath}' -CompressionLevel Optimal`;
+    // $ProgressPreference='SilentlyContinue' — Write-Progress in a non-interactive
+    // pipe is extremely slow and can throw "No process is on the other end of the pipe".
+    const psScript = `$ProgressPreference='SilentlyContinue'; Compress-Archive -Path '${sourceDir}\\*' -DestinationPath '${zipPath}' -CompressionLevel Optimal`;
     execSync(`powershell -NoProfile -Command "${psScript}"`, { stdio: "inherit" });
   } else {
     execSync(`cd "${sourceDir}" && tar -czf "${zipPath}" .`, { stdio: "inherit" });

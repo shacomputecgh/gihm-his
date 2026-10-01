@@ -483,6 +483,14 @@ export default function AppLayout() {
 
   return (
     <div className="flex min-h-screen bg-g-paper dark:bg-g-dark-bg">
+      {/* Skip link: keyboard users should not have to tab through the whole
+          sidebar and header on every page. Hidden until it takes focus. */}
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-lg focus:bg-g-red focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white focus:shadow-lg"
+      >
+        Skip to main content
+      </a>
       <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
       {/* Mobile overlay */}
       {sidebarOpen && (
@@ -619,7 +627,7 @@ export default function AppLayout() {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 p-4 lg:p-6">
+        <main id="main" tabIndex={-1} className="flex-1 p-4 outline-none lg:p-6">
           <ErrorBoundary>
             <Outlet />
           </ErrorBoundary>

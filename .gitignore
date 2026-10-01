@@ -95,3 +95,7 @@ desktop/dotnet/src/SchoolManagement/web-dist/
 .freebuff/*.db-wal
 .freebuff/*.log*
 .freebuff/*-pid.txt
+
+# Android signing (keep local; back up securely)
+mobile/android-native/release.keystore
+mobile/android-native/keystore.properties

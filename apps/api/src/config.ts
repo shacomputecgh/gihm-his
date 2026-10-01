@@ -35,6 +35,9 @@ export const config = {
     // this facility are relayed (one relay instance per facility). Unset for a
     // single-facility edge, which relays the whole local log.
     facilityId: process.env.EDGE_RELAY_FACILITY_ID ?? undefined,
+    // Bound on each upstream relay call. Without it an unreachable-but-hanging
+    // national platform stalls a relay pass indefinitely (see modules/edge/relay.ts).
+    requestTimeoutMs: Math.max(1, Number(process.env.EDGE_RELAY_TIMEOUT_SECONDS ?? 15)) * 1000,
   },
   // National integration adapters (docs/08 §3): DHIMS2 (indicator datasets),
   // SORMAS (disease case events), GhiLMIS (logistics stock levels) and HRIMS

@@ -70,7 +70,9 @@ export function registerPatientPhotoRoutes(app: FastifyInstance, db: PrismaClien
       const patient = await db.patient.findUnique({ where: { id: params.id } });
       if (!patient) throw httpErrors.notFound('Patient not found');
 
-      const storedName = path.join('patients', params.id, `photo.${ext}`);
+      // POSIX-style stored name (stable across OSes — Windows must not leak
+      // backslashes into the DB value used by every client).
+      const storedName = `patients/${params.id}/photo.${ext}`;
       const target = path.join(uploadsRoot(), storedName);
       await fs.mkdir(path.dirname(target), { recursive: true });
       // Write the new file first, then remove any previous photo with a

@@ -344,14 +344,23 @@ describe('config audit — filters and CSV export', () => {
   });
 
   it('exports the filtered trail as CSV', async () => {
-    const res = await app.inject({ method: 'GET', url: '/api/v1/admin/audit/config?action=system.settings&format=csv', headers: auth(admin.token) });
+    // Prove the export carries the changed KEY but never the VALUE. The canary
+    // must be a value that cannot collide with a key name: `sms.hubtel.clientId`
+    // is itself a legitimate setting key, so asserting the summary excludes
+    // "hubtel" would fail (or pass) depending on which other settings rows
+    // happen to share the trail — a substring check on a provider name is not
+    // sound. A unique canary value is order-independent.
+    const canary = 'sms-provider-canary-j7x';
+    await app.inject({ method: 'PUT', url: '/api/v1/admin/settings', headers: auth(admin.token), payload: { updates: [{ key: 'sms.provider', value: canary }] } });
+    const res = await app.inject({ method: 'GET', url: '/api/v1/admin/audit/config?action=system.settings.update&format=csv', headers: auth(admin.token) });
     expect(res.statusCode).toBe(200);
     expect(res.headers['content-type']).toContain('text/csv');
     const body = res.body;
     expect(body.startsWith('"When","Actor"')).toBe(true); // fully quoted header
     expect(body).toContain('"Settings updated"'); // human label, never the raw action
     expect(body).toContain('sms.provider'); // the changed key in the summary
-    expect(body).not.toContain('hubtel'); // values never leak into the export
+    expect(body).not.toContain(canary); // values never leak into the export
+    await clearSetting(db, 'sms.provider');
   });
 
   it('filters the developer full audit by actor/action', async () => {

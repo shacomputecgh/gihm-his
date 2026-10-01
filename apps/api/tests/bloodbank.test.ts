@@ -144,8 +144,13 @@ describe('donations', () => {
     created.forEach((u: { id: string }) => unitIds.push(u.id));
     expect(created).toHaveLength(2);
     expect(created.map((u: { status: string }) => u.status)).toEqual(['AVAILABLE', 'AVAILABLE']);
-    expect(created[0].unitCode).toMatch(/^BL-\d{4}-0001$/);
-    expect(created[1].unitCode).toMatch(/^BL-\d{4}-0002$/);
+    // The unit counter is a global yearly sequence shared across facilities —
+    // other test files may have already created units this year, so assert
+    // strict sequencing (n, n+1) rather than absolute codes (0001, 0002).
+    const seq = created.map((u: { unitCode: string }) => Number(u.unitCode.split('-').pop()));
+    expect(created[0].unitCode).toMatch(/^BL-\d{4}-\d{4}$/);
+    expect(created[1].unitCode).toMatch(/^BL-\d{4}-\d{4}$/);
+    expect(seq[1]).toBe(seq[0]! + 1);
     const refreshed = await db.bloodDonor.findUnique({ where: { id: donor.id } });
     expect(refreshed?.totalDonations).toBe(1);
     expect(refreshed?.lastDonationAt).toBeTruthy();

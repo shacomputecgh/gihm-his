@@ -40,10 +40,10 @@ describe('LicenseBadge', () => {
     expect(screen.queryByText(/LICENSED|UNLICENSED|EXPIRED/)).toBeNull();
   });
 
-  it('shows UNLICENSED when no license is activated', async () => {
+  it('shows the trial badge when no license is activated', async () => {
     mocks.api.mockResolvedValue({ license: license({ activated: false }) });
     renderBadge();
-    await waitFor(() => expect(screen.getByText('UNLICENSED')).toBeTruthy());
+    await waitFor(() => expect(screen.getByText('TRIAL · 30 DAYS')).toBeTruthy());
   });
 
   it('shows EXPIRED in red when the license has lapsed', async () => {

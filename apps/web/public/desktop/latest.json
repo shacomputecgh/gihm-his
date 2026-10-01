@@ -1,11 +1,11 @@
 {
-  "version": "0.2.1",
-  "releaseDate": "2026-09-06T07:35:23Z",
-  "url": "https://github.com/shacomputecgh/gihm-his/releases/download/v0.2.1/GIHM-HIS-0.2.1-Setup.exe",
-  "sha256": "68aa61cbb68c177377bb98c2dacb000a0a6d0789dbf02aa5eaf5395c68100bc6",
+  "version": "0.2.2",
+  "releaseDate": "2026-09-30T04:20:54Z",
+  "url": "https://github.com/shacomputecgh/gihm-his/releases/download/v0.2.2/GIHM-HIS-0.2.2-Setup.exe",
+  "sha256": "016d1172be3afbc1b2a673e49986ad46e0ee01d1795ceed84b0b142096338186",
   "releaseNotes": "",
   "artifacts": {
-    "setup": "https://github.com/shacomputecgh/gihm-his/releases/download/v0.2.1/GIHM-HIS-0.2.1-Setup.exe",
-    "portable": "https://github.com/shacomputecgh/gihm-his/releases/download/v0.2.1/GIHM-HIS-0.2.1-Portable.zip"
+    "setup": "https://github.com/shacomputecgh/gihm-his/releases/download/v0.2.2/GIHM-HIS-0.2.2-Setup.exe",
+    "portable": "https://github.com/shacomputecgh/gihm-his/releases/download/v0.2.2/GIHM-HIS-0.2.2-Portable.zip"
   }
 }

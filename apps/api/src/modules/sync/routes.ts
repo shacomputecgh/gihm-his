@@ -89,7 +89,7 @@ export function registerSyncRoutes(app: FastifyInstance, db: PrismaClient, guard
           // Real-time broadcast: push to all SSE subscribers
           if (applied.status === 'PROCESSED' && applied.entityId) {
             const bFacilityId = u.facilityId ?? (typeof m.payload.facilityId === 'string' ? m.payload.facilityId : undefined);
-            broadcastEntity(m.entityType, m.operation, applied.entityId, bFacilityId, m.payload);
+            broadcastEntity(m.entityType, m.operation, applied.entityId, bFacilityId ?? null, m.payload);
           }
         } catch (err) {
           failed++;

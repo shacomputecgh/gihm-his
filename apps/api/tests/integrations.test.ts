@@ -441,7 +441,7 @@ describe('LHIMS adapter', () => {
     // MPI identity resolution: MRN identifier is always present.
     expect(patient.resource.identifier.some((i: { system: string }) => i.system === 'urn:gihm:mrn')).toBe(true);
 
-    const encounter = bundle.entry.find((en: { resource: { resourceType: string } }) => en.resource.resourceType === 'Encounter');
+    const encounter = bundle.entry.find((en: { resource: { resourceType: string; subject?: { reference: string } } }) => en.resource.resourceType === 'Encounter' && en.resource.subject?.reference === `Patient/${patientId}`);
     expect(encounter).toBeTruthy();
     expect(encounter.resource.status).toBe('planned'); // OPEN → planned
     expect(encounter.resource.class.code).toBe('AMB'); // OPD → AMB

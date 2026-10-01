@@ -47,6 +47,26 @@ export interface EdgeRelayConfig {
    * instance per facility; unset relays the whole log (single-facility edge).
    */
   facilityId?: string;
+  /**
+   * Hard bound on any single upstream call (login or push). Defaults to 15s.
+   * See fetchUpstream for why this must never be unbounded.
+   */
+  requestTimeoutMs?: number;
+}
+
+/**
+ * Every upstream call is bounded. An upstream that is unreachable but still
+ * accepts TCP — a black-holed WAN route, a dead VPN, a firewall that silently
+ * drops packets — would otherwise leave a relay pass hanging forever, and the
+ * edge would stop retrying for the rest of the outage. Bounding the call turns
+ * a silent hang into a fast, logged failure that the next pass retries
+ * (docs/16 §2, docs/19 Test J: the outage drill must drain exactly once when
+ * the national platform returns).
+ */
+const DEFAULT_REQUEST_TIMEOUT_MS = 15_000;
+
+function fetchUpstream(url: string, init: RequestInit, timeoutMs: number): Promise<Response> {
+  return fetch(url, { ...init, signal: AbortSignal.timeout(timeoutMs) });
 }
 
 interface RelayState {
@@ -82,11 +102,11 @@ function writeState(cfg: EdgeRelayConfig, state: RelayState): void {
 }
 
 async function login(cfg: EdgeRelayConfig): Promise<string> {
-  const res = await fetch(`${cfg.url.replace(/\/$/, '')}/api/v1/auth/login`, {
+  const res = await fetchUpstream(`${cfg.url.replace(/\/$/, '')}/api/v1/auth/login`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ email: cfg.username, password: cfg.password }),
-  });
+  }, cfg.requestTimeoutMs ?? DEFAULT_REQUEST_TIMEOUT_MS);
   if (!res.ok) throw new Error(`edge relay login failed: HTTP ${res.status}`);
   const body = (await res.json()) as { token?: string };
   if (!body.token) throw new Error('edge relay login returned no token');
@@ -140,35 +160,32 @@ export async function relayOnce(
   }));
 
   const url = `${cfg.url.replace(/\/$/, '')}/api/v1/sync/mutations`;
+  const timeoutMs = cfg.requestTimeoutMs ?? DEFAULT_REQUEST_TIMEOUT_MS;
   // Token is fetched lazily and only re-fetched on a 401 (upstream sessions).
   let token: string | null = null;
 
   const push = async (): Promise<{ statuses: string[]; ok: boolean }> => {
     if (!token) token = await login(cfg);
-    const res = await fetch(url, {
+    const pushBody = {
+      deviceId: state.deviceId,
+      deviceName: `Facility edge ${state.deviceId}`,
+      platform: 'EDGE',
+      mutations,
+    };
+    const res = await fetchUpstream(url, {
       method: 'POST',
       headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
-      body: JSON.stringify({
-        deviceId: state.deviceId,
-        deviceName: `Facility edge ${state.deviceId}`,
-        platform: 'EDGE',
-        mutations,
-      }),
-    });
+      body: JSON.stringify(pushBody),
+    }, timeoutMs);
     if (res.status === 401) {
       // Stale/expired session — refresh once and retry.
       token = null;
       token = await login(cfg);
-      const retry = await fetch(url, {
+      const retry = await fetchUpstream(url, {
         method: 'POST',
         headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          deviceId: state.deviceId,
-          deviceName: `Facility edge ${state.deviceId}`,
-          platform: 'EDGE',
-          mutations,
-        }),
-      });
+        body: JSON.stringify(pushBody),
+      }, timeoutMs);
       if (!retry.ok) throw new Error(`edge relay push failed: HTTP ${retry.status}`);
       const retryBody = (await retry.json()) as { results?: { status?: string }[] };
       return {

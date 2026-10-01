@@ -128,6 +128,8 @@ export function ConnectionProvider({ children }: { children: ReactNode }) {
     const onVisibility = () => {
       if (document.visibilityState === 'visible') {
         void refresh();
+        // Push any pending mutations as soon as the user returns to the app.
+        void sync();
       }
     };
 

@@ -204,3 +204,22 @@ input:focus, select:focus, textarea:focus {
   33% { transform: translate(24px, -32px) scale(1.06); }
   66% { transform: translate(-18px, 20px) scale(0.96); }
 }
+
+/* ── Keyboard focus visibility (a11y) ── */
+:focus-visible {
+  outline: 2px solid var(--color-g-red);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── Respect reduced-motion preference (a11y) ── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

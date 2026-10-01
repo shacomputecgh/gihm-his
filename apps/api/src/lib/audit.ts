@@ -11,7 +11,10 @@ export interface AuditInput {
 }
 
 /**
- * Records an audit entry. Never blocks the request: failures are logged to
+ * Records an audit entry without blocking the handler. The write promise is
+ * attached to the request so the `onResponse` flush hook (app.ts) can await it
+ * before the request lifecycle completes — audit rows are durable the moment
+ * the caller sees a response, never a lost race. Failures are logged to
  * stderr only. Clinical records are never silently overwritten — the `before`
  * and `after` snapshots (JSON) support full reconstruction.
  */
@@ -31,9 +34,20 @@ export function recordAudit(db: PrismaClient, req: FastifyRequest, input: AuditI
     after: input.after !== undefined ? safeJson(input.after) : undefined,
     reason: input.reason,
   };
-  void db.auditLog
+  const write = db.auditLog
     .create({ data: entry })
     .catch((e: unknown) => console.error('[audit] failed to write entry', e));
+  const pending = (req as FastifyRequest & { auditWrites?: Promise<unknown>[] });
+  (pending.auditWrites ??= []).push(write);
+}
+
+/** Awaits every audit write recorded on the request (onSend/onResponse). */
+export async function flushAuditWrites(req: FastifyRequest): Promise<void> {
+  const pending = (req as FastifyRequest & { auditWrites?: Promise<unknown>[] }).auditWrites;
+  if (pending?.length) {
+    const batch = pending.splice(0, pending.length);
+    await Promise.allSettled(batch);
+  }
 }
 
 function safeJson(v: unknown): string | undefined {

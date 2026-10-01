@@ -76,7 +76,8 @@ export function registerLLMRoutes(app: FastifyInstance, db: PrismaClient, guards
         OR: [
           { name: { contains: message } },
           { symptoms: { contains: message } },
-          { description: { contains: message } },
+          { transmission: { contains: message } },
+          { prevention: { contains: message } },
         ],
       },
       take: 5,

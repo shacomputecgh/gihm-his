@@ -57,6 +57,7 @@ import { registerBroadcastHook } from './modules/sync/broadcastHook.js';
 import { registerHealthRoutes } from './modules/health.js';
 import { registerMetricsRoutes } from './modules/metrics.js';
 import { withEntityCapture } from './modules/edge/capture.js';
+import { flushAuditWrites } from './lib/audit.js';
 
 export async function buildApp(opts: { db?: PrismaClient; logger?: boolean } = {}): Promise<FastifyInstance> {
   // A facility edge with an upstream (EDGE_RELAY_URL) captures direct online
@@ -130,6 +131,17 @@ export async function buildApp(opts: { db?: PrismaClient; logger?: boolean } = {
 
   // All platform routes are versioned under /api/v1 (spec §54 API-first).
   const api = async (instance: FastifyInstance) => {
+    // Audit durability: every recordAudit write issued while serving a request
+    // is awaited before the response is transmitted (onSend) — an audit row is
+    // always queryable the moment the caller sees the response, never a lost
+    // race. onResponse is a second pass for late/streamed paths; flushing is
+    // idempotent because the pending list is cleared on drain.
+    instance.addHook('onSend', async (request) => {
+      await flushAuditWrites(request);
+    });
+    instance.addHook('onResponse', async (request) => {
+      await flushAuditWrites(request);
+    });
     registerHealthRoutes(instance, db);
     registerMetricsRoutes(instance, db);
     registerAuthRoutes(instance, db, guards);

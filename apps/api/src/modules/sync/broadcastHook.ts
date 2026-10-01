@@ -57,7 +57,7 @@ export function registerBroadcastHook(app: FastifyInstance): void {
     if (!bestKey) return null;
 
     return {
-      entity: ENTITY_MAP[bestKey],
+      entity: ENTITY_MAP[bestKey] ?? 'unknown',
       operation: 'UPDATE',
     };
   }

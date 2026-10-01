@@ -294,6 +294,10 @@ describe('alert email delivery — SMTP channel', () => {
         await new Promise((r) => setTimeout(r, 50));
       }
     }
+    // Hermetic digest: the severity derives from ANY lockout in the last 24h,
+    // and earlier test files (e.g. login lockout tests) leave rows behind —
+    // clear them all so this file's expected warning severity is deterministic.
+    await db.securityAlert.deleteMany({ where: { event: 'lockout' } });
     // A license inside the expiry window → a warning digest.
     await clearSetting(db, 'alerts.lastDigestDate');
     await setSetting(db, 'license.key', 'GIHM-DIGESTMAIL-FFFF');
@@ -1254,6 +1258,9 @@ describe('security alert inbox + license expiry sweep', () => {
     await setSetting(db, 'license.alertDaysBefore', '14');
     await setSetting(db, 'license.expiryAlertedAt', '');
     await setSetting(db, 'license.expiresAt', new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString());
+    // Severity derives from any 24h lockout — clear rows left by earlier files
+    // so the expected warning severity is deterministic in a full-suite run.
+    await db.securityAlert.deleteMany({ where: { event: 'lockout' } });
 
     const first = await runDailyDigest(db);
     expect(first.published).toBe(true);
