@@ -99,3 +99,13 @@ desktop/dotnet/src/SchoolManagement/web-dist/
 # Android signing (keep local; back up securely)
 mobile/android-native/release.keystore
 mobile/android-native/keystore.properties
+
+# Local staging for the large desktop binaries + upload metadata (never committed;
+# see desktop/dotnet/build-release.mjs — releases are hosted on GitHub Releases)
+/public/
+
+# Desktop build error logs
+desktop/dotnet/*.err
+
+# Dev/build stderr logs
+.freebuff/*.err

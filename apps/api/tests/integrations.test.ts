@@ -434,7 +434,10 @@ describe('LHIMS adapter', () => {
     expect(bundle.resourceType).toBe('Bundle');
     expect(bundle.type).toBe('transaction');
 
-    const patient = bundle.entry.find((en: { resource: { resourceType: string } }) => en.resource.resourceType === 'Patient');
+    // The bundle carries every patient with activity in the period (other test
+    // files leave synthetic patients behind in the shared DB), so resolve this
+    // file's patient by id rather than trusting entry order.
+    const patient = bundle.entry.find((en: { resource: { resourceType: string; id?: string } }) => en.resource.resourceType === 'Patient' && en.resource.id === patientId);
     expect(patient).toBeTruthy();
     expect(patient.resource.name[0].text).toBe('Integration Patient (synthetic)');
     expect(patient.resource.gender).toBe('male');
@@ -447,7 +450,7 @@ describe('LHIMS adapter', () => {
     expect(encounter.resource.class.code).toBe('AMB'); // OPD → AMB
     expect(encounter.resource.subject.reference).toBe(`Patient/${patientId}`);
 
-    const report = bundle.entry.find((en: { resource: { resourceType: string } }) => en.resource.resourceType === 'DiagnosticReport');
+    const report = bundle.entry.find((en: { resource: { resourceType: string; subject?: { reference: string } } }) => en.resource.resourceType === 'DiagnosticReport' && en.resource.subject?.reference === `Patient/${patientId}`);
     expect(report).toBeTruthy();
     expect(report.resource.status).toBe('final'); // VERIFIED → final
     expect(report.resource.code.text).toBe('Malaria RDT');
