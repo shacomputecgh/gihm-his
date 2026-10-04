@@ -702,6 +702,165 @@ function LicensingTab() {
   );
 }
 
+// ----------------------------------------------- sealed audit ledger (docs/10)
+interface LedgerReport {
+  status: 'verified' | 'degraded' | 'broken';
+  ok: boolean;
+  checkpoints: number;
+  sealedEntries: number;
+  unsealedEntries: number;
+  totalEntries: number;
+  headHash: string;
+  latest: { seq: number; toAt: string; entryCount: number; root: string; hash: string; sealedAt: string } | null;
+  problems: Array<{ seq: number; type: string; detail: string }>;
+}
+
+interface LedgerCheckpoint {
+  seq: number;
+  entryCount: number;
+  root: string;
+  hash: string;
+  toAt: string;
+  sealedAt: string;
+  sealedByEmail: string | null;
+}
+
+const LEDGER_TONE: Record<LedgerReport['status'], 'green' | 'gold' | 'red'> = { verified: 'green', degraded: 'gold', broken: 'red' };
+const LEDGER_LABEL: Record<LedgerReport['status'], string> = { verified: 'Verified', degraded: 'Degraded', broken: 'Broken' };
+
+/**
+ * Tamper-evidence for the audit trail: seal the newest entries into a
+ * hash-chained Merkle checkpoint, re-verify every checkpoint, and hand out a
+ * proof bundle a third party can check offline with no access to this system.
+ */
+function AuditLedgerCard() {
+  const toast = useToast();
+  const [report, setReport] = useState<LedgerReport | null>(null);
+  const [checkpoints, setCheckpoints] = useState<LedgerCheckpoint[]>([]);
+  const [busy, setBusy] = useState<'idle' | 'verify' | 'seal'>('idle');
+
+  const load = useCallback(async () => {
+    setBusy((b) => (b === 'seal' ? b : 'verify'));
+    try {
+      const [integrity, listed] = await Promise.all([
+        api<LedgerReport>('/admin/developer/audit/integrity'),
+        api<{ anchors: LedgerCheckpoint[] }>('/admin/developer/audit/anchors?take=8'),
+      ]);
+      setReport(integrity);
+      setCheckpoints(listed.anchors);
+    } catch (err) {
+      console.error('[audit-ledger] verification failed', err);
+    } finally {
+      setBusy('idle');
+    }
+  }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  async function seal() {
+    setBusy('seal');
+    try {
+      const res = await api<{ sealed: boolean; reason?: string; anchor?: { seq: number; entryCount: number } }>(
+        '/admin/developer/audit/seal',
+        { method: 'POST' },
+      );
+      toast(
+        res.sealed
+          ? `Sealed ${res.anchor?.entryCount ?? 0} entries into checkpoint #${res.anchor?.seq ?? '?'}`
+          : 'Nothing new to seal — the trail is already covered',
+        res.sealed ? 'success' : 'info',
+      );
+      await load();
+    } catch (err) {
+      console.error('[audit-ledger] seal failed', err);
+      toast('Could not seal the ledger', 'error');
+    } finally {
+      setBusy('idle');
+    }
+  }
+
+  async function downloadBundle() {
+    try {
+      await downloadFile('/admin/developer/audit/anchors/export', `gihm-audit-ledger-${new Date().toISOString().slice(0, 10)}.json`);
+      toast('Proof bundle downloaded — verify it offline with scripts/verify-audit-ledger.mjs', 'success');
+    } catch (err) {
+      console.error('[audit-ledger] export failed', err);
+      toast('Could not export the proof bundle', 'error');
+    }
+  }
+
+  return (
+    <Card
+      title="Sealed audit ledger"
+      subtitle="Entries are hashed into a Merkle checkpoint chained to the one before it, so an altered or removed sealed record is detectable — including offline, from an exported proof bundle."
+      action={report && <Badge tone={LEDGER_TONE[report.status]}>{LEDGER_LABEL[report.status]}</Badge>}
+    >
+      {!report ? (
+        <Spinner label="Verifying the ledger…" />
+      ) : (
+        <div className="space-y-4">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <StatCard label="Checkpoints" value={report.checkpoints} icon="shield" tone="navy" />
+            <StatCard label="Sealed entries" value={report.sealedEntries} icon="check" tone="green" hint={`${report.totalEntries} in the trail`} />
+            <StatCard label="Awaiting seal" value={report.unsealedEntries} icon="clock" tone={report.unsealedEntries > 0 ? 'gold' : 'gray'} hint="Not covered by a checkpoint yet" />
+            <StatCard label="Head" value={<span className="font-mono text-xs">{report.headHash.slice(0, 12)}…</span>} icon="hash" tone={LEDGER_TONE[report.status]} hint={report.latest ? `Checkpoint #${report.latest.seq} · ${fmtDateTime(report.latest.sealedAt)}` : 'No checkpoint yet'} />
+          </div>
+
+          {report.problems.length > 0 && (
+            <div className={`rounded-lg border p-3 text-xs ${report.status === 'broken' ? 'border-red-200 bg-red-50 text-red-800 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300' : 'border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-300'}`}>
+              <p className="font-semibold">
+                {report.status === 'broken'
+                  ? 'Integrity problem found — the sealed trail does not match its checkpoints.'
+                  : 'Checkpoints verified, but some windows can no longer be recomputed (entries pruned under the retention policy).'}
+              </p>
+              <ul className="mt-1.5 space-y-0.5">
+                {report.problems.slice(0, 6).map((p, i) => (
+                  <li key={`${p.seq}-${p.type}-${i}`}>
+                    Checkpoint #{p.seq} · <span className="font-mono">{p.type}</span> — {p.detail}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <div className="flex flex-wrap justify-end gap-2">
+            <Button variant="navy" loading={busy === 'seal'} onClick={() => void seal()}>Seal now</Button>
+            <Button variant="outline" loading={busy === 'verify'} onClick={() => void load()}>Re-verify</Button>
+            <Button variant="outline" onClick={() => void downloadBundle()}>Download proof bundle</Button>
+          </div>
+
+          {checkpoints.length > 0 && (
+            <div className="overflow-x-auto rounded-lg border border-slate-100 dark:border-g-dark-border">
+              <table className="w-full text-left text-sm">
+                <thead>
+                  <tr className="border-b border-slate-100 text-xs uppercase text-slate-400 dark:border-g-dark-border">
+                    {['#', 'Sealed', 'Entries', 'Root', 'By'].map((h) => (
+                      <th key={h} className="px-4 py-2.5 font-semibold">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50 dark:divide-g-dark-border">
+                  {checkpoints.map((c) => (
+                    <tr key={c.seq}>
+                      <td className="px-4 py-2 font-mono text-xs text-slate-500">#{c.seq}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-slate-500">{fmtDateTime(c.sealedAt)}</td>
+                      <td className="px-4 py-2 text-slate-500">{c.entryCount}</td>
+                      <td className="px-4 py-2 font-mono text-xs text-slate-400">{c.root.slice(0, 16)}…</td>
+                      <td className="px-4 py-2 text-xs text-slate-400">{c.sealedByEmail ?? 'system'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+    </Card>
+  );
+}
+
 // ------------------------------------------------------------------- audit
 function AuditTab() {
   const [entries, setEntries] = useState<AuditEntry[] | null>(null);
@@ -740,6 +899,7 @@ function AuditTab() {
 
   return (
     <div className="space-y-3">
+      <AuditLedgerCard />
       <Card title="Full audit trail" subtitle="Every action in the system, including developer operations. Filter by action prefix, actor, entity type, id or a date range.">
         <div className="grid gap-3 md:grid-cols-6">
           <Field label="Action"><Input placeholder="e.g. developer, masterdata" value={filters.action} onChange={(e) => setFilters((f) => ({ ...f, action: e.target.value }))} /></Field>

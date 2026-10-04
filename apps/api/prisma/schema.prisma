@@ -1878,6 +1878,40 @@ model AuditLog {
   after       String?
   reason      String?
   createdAt   DateTime @default(now())
+  // Position in the sealed audit ledger (docs/10). Assigned lazily by the seal
+  // operation — never on the write hot path — so the trail stays append-cheap
+  // while still giving every sealed entry a deterministic, gap-free ordering
+  // that the Merkle checkpoint can be recomputed against.
+  ledgerSeq   Int?
+
+  @@index([ledgerSeq])
+}
+
+// ---------------------------------------------------------------------
+// Sealed audit ledger (docs/10 §5). The AuditLog itself is a plain table, so
+// nothing stops an operator with database access from editing or deleting a
+// row. This table is the tamper-evidence layer: a seal recomputes a Merkle
+// root over a contiguous window of audit entries and appends an immutable
+// checkpoint whose hash chains to the previous checkpoint. Any later edit to
+// a sealed entry changes its leaf and therefore the recomputed root, so the
+// break is detectable — including offline, against an exported proof bundle.
+// ---------------------------------------------------------------------
+model AuditAnchor {
+  id           String   @id @default(uuid())
+  seq          Int      @unique // 1-based position in the checkpoint chain
+  fromSeq      Int      // first ledgerSeq covered (inclusive)
+  toSeq        Int      // last ledgerSeq covered (inclusive)
+  entryCount   Int      // number of entries the window must contain
+  root         String   // Merkle root of the window's entry leaves
+  firstEntryId String   // boundary ids — the window is located by these
+  lastEntryId  String
+  fromAt       DateTime // earliest covered createdAt
+  toAt         DateTime // latest covered createdAt
+  prevHash     String   // previous anchor hash, or GENESIS for the first
+  hash         String   // sha256 over the anchor's canonical core
+  sealedAt     DateTime @default(now())
+  sealedById   String?
+  sealedByEmail String?
 }
 
 // ---------------------------------------------------------------------

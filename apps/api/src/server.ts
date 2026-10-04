@@ -96,6 +96,30 @@ async function main() {
     setInterval(() => void run('interval'), 30 * 60 * 1000);
   }
 
+  // Sealed audit ledger (docs/10 §5): checkpoint the audit trail daily so any
+  // later edit to a sealed entry is detectable, and so there is a maintained
+  // chain for a regulator to verify rather than a one-off manual seal. Sealing
+  // is idempotent and a no-op when nothing is new, so a missed run self-heals.
+  {
+    let running = false;
+    const run = async (source: string) => {
+      if (running) return;
+      running = true;
+      try {
+        const { prisma } = await import('./db.js');
+        const { sealAuditWindow } = await import('./modules/admin/auditLedger.js');
+        const result = await sealAuditWindow(prisma, { email: 'system:auto-seal' });
+        if (result.sealed) app.log.info({ result, source }, 'audit ledger sealed');
+      } catch (err) {
+        app.log.error(err, 'audit ledger seal failed');
+      } finally {
+        running = false;
+      }
+    };
+    setTimeout(() => void run('boot'), 45_000);
+    setInterval(() => void run('interval'), 24 * 3600 * 1000);
+  }
+
   // Facility edge relay (docs/16 §2, docs/26): when this deployment is a
   // facility edge configured with a national/regional upstream (EDGE_RELAY_URL),
   // bubble the local PROCESSED mutation log up through the same shared

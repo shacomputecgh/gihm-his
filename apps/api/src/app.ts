@@ -26,6 +26,7 @@ import { registerAdminUnitsRoutes } from './modules/admin/units.js';
 import { registerAdminUserRoutes } from './modules/admin/users.js';
 import { registerNationalServiceRoutes } from './modules/admin/nationalService.js';
 import { registerDeveloperRoutes } from './modules/admin/developer.js';
+import { registerAuditLedgerRoutes } from './modules/admin/auditLedger.js';
 import { registerMpiRoutes } from './modules/admin/mpi.js';
 import { registerClinicalRoutes } from './modules/clinical/routes.js';
 import { registerDrugRoutes } from './modules/clinical/drugs.js';
@@ -159,6 +160,7 @@ export async function buildApp(opts: { db?: PrismaClient; logger?: boolean } = {
     registerAdminUserRoutes(instance, db, guards);
     registerNationalServiceRoutes(instance, db, guards);
     registerDeveloperRoutes(instance, db, guards);
+    registerAuditLedgerRoutes(instance, db, guards);
     registerMpiRoutes(instance, db, guards);
     registerClinicalRoutes(instance, db, guards);
     registerDrugRoutes(instance, db, guards);
